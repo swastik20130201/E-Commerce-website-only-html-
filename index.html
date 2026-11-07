@@ -1,0 +1,2001 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>All online service | Business Services Portal</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
+
+  <!-- Chart.js, jsPDF, html2canvas, SheetJS -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+
+  <style>
+    :root {
+      --primary: #5b6af8; --primary-light: #8aa2ff; --primary-dark: #3748db;
+      --secondary: #ff6ab7; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; --info: #3b82f6;
+      --bg: #f3f7ff; --surface: rgba(255,255,255,0.82); --surface-solid: #ffffff;
+      --text: #18212f; --text-secondary: #64748b; --border: rgba(148,163,184,0.18);
+      --shadow: 0 12px 35px rgba(37, 52, 105, 0.08); --shadow-lg: 0 24px 80px rgba(23, 34, 67, 0.16);
+      --radius: 20px; --radius-sm: 12px; --transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+      --glass: rgba(255,255,255,0.72); --glass-border: rgba(255,255,255,0.55);
+    }
+    [data-theme="dark"] {
+      --primary: #7c6ae3; --primary-light: #a797ff; --primary-dark: #5f4bd2;
+      --secondary: #4de0c9; --success: #35d194; --warning: #f7bb5d; --danger: #ff6b6b; --info: #5ec2ff;
+      --bg: #1d1838; --surface: rgba(47,41,79,0.85); --surface-solid: #2a254a;
+      --text: #edf1ff; --text-secondary: #b8bdd9; --border: rgba(255,255,255,0.08);
+      --shadow: 0 16px 40px rgba(8, 6, 22, 0.45); --shadow-lg: 0 26px 70px rgba(8,6,22,0.55);
+      --glass: rgba(43,36,73,0.8); --glass-border: rgba(255,255,255,0.08);
+    }
+    [data-theme="dark"] body {
+      background: radial-gradient(circle at top, rgba(124,106,227,0.35), transparent 28%), linear-gradient(180deg, #18132e 0%, #20193d 100%);
+    }
+    [data-theme="dark"] .bg-gradient {
+      background: linear-gradient(135deg, rgba(27,22,50,0.95), rgba(34,28,60,0.92));
+    }
+    [data-theme="dark"] .glass-card,
+    [data-theme="dark"] .sidebar,
+    [data-theme="dark"] .top-bar,
+    [data-theme="dark"] .chart-card,
+    [data-theme="dark"] .stat-card,
+    [data-theme="dark"] .table-card,
+    [data-theme="dark"] .modal,
+    [data-theme="dark"] .login-card {
+      background: linear-gradient(180deg, rgba(52,45,84,0.92), rgba(41,34,68,0.9));
+      border-color: rgba(255,255,255,0.08);
+      box-shadow: var(--shadow);
+    }
+    [data-theme="dark"] .sidebar { background: linear-gradient(180deg, rgba(44,38,75,0.96), rgba(29,24,56,0.96)); }
+    [data-theme="dark"] .nav-item { color: var(--text-secondary); }
+    [data-theme="dark"] .nav-item:hover, [data-theme="dark"] .nav-item.active { background: linear-gradient(135deg, rgba(124,106,227,0.9), rgba(76,67,150,0.9)); color: white; }
+    [data-theme="dark"] .btn-primary { background: linear-gradient(135deg, var(--secondary), #2fb7d1); color: #061b20; }
+    [data-theme="dark"] .btn-secondary { background: rgba(255,255,255,0.04); color: var(--text); border-color: var(--border); }
+    [data-theme="dark"] .btn-icon { background: rgba(255,255,255,0.04); }
+    [data-theme="dark"] .form-input, [data-theme="dark"] .form-select, [data-theme="dark"] .form-textarea, [data-theme="dark"] .search-box input {
+      background: rgba(255,255,255,0.03); border-color: var(--border); }
+    [data-theme="dark"] .badge-pending { background: rgba(247,187,93,0.15); color: var(--warning); }
+    [data-theme="dark"] .badge-approved { background: rgba(53,209,148,0.14); color: var(--success); }
+    [data-theme="dark"] .badge-review { background: rgba(94,194,255,0.14); color: var(--info); }
+    [data-theme="dark"] .badge-progress { background: rgba(124,106,227,0.18); color: var(--primary-light); }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Inter',sans-serif; background:radial-gradient(circle at top left, rgba(91,106,248,0.12), transparent 25%), radial-gradient(circle at bottom right, rgba(255,106,183,0.12), transparent 30%), var(--bg); color:var(--text); min-height:100vh; transition:var(--transition); overflow-x:hidden; }
+    .bg-gradient { position:fixed; top:0;left:0;right:0;bottom:0; z-index:-1; background:linear-gradient(135deg,#edf4ff 0%,#f9faff 100%); overflow:hidden; }
+    .bg-gradient::before { content:''; position:absolute; width:650px;height:650px; border-radius:50%; background:radial-gradient(circle,var(--primary-light) 0%,transparent 70%); opacity:0.18; top:-220px;left:-200px; animation:float 20s infinite ease-in-out; }
+    .bg-gradient::after { content:''; position:absolute; width:550px;height:550px; border-radius:50%; background:radial-gradient(circle,var(--secondary) 0%,transparent 70%); opacity:0.12; bottom:-170px;right:-180px; animation:float 25s infinite ease-in-out reverse; }
+    @keyframes float { 0%,100%{transform:translate(0,0) scale(1);} 33%{transform:translate(30px,-30px) scale(1.08);} 66%{transform:translate(-20px,20px) scale(0.94);} }
+    .glass-card { background:linear-gradient(180deg, rgba(255,255,255,0.78), rgba(255,255,255,0.62)); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid var(--glass-border); border-radius:var(--radius); box-shadow:var(--shadow); transition:var(--transition); }
+    .glass-card:hover { box-shadow:var(--shadow-lg); transform:translateY(-2px); }
+    .sidebar, .top-bar, .table-card, .chart-card, .stat-card, .modal { border:1px solid rgba(148,163,184,0.12); }
+    .app-container { display:flex; min-height:100vh; }
+    .sidebar { width:280px; background:linear-gradient(180deg, rgba(255,255,255,0.78), rgba(245,247,255,0.72)); backdrop-filter:blur(20px); border-right:1px solid var(--border); display:flex; flex-direction:column; position:fixed; height:100vh; z-index:100; transition:var(--transition); box-shadow:12px 0 30px rgba(37,52,105,0.04); }
+    .sidebar.collapsed { width:80px; }
+    .sidebar.collapsed .nav-text,.sidebar.collapsed .logo-text,.sidebar.collapsed .user-info { display:none; }
+    .sidebar-header { padding:24px 20px; border-bottom:1px solid var(--border); }
+    .logo { display:flex; align-items:center; gap:12px; font-size:1.5rem; font-weight:800; color:var(--primary); text-decoration:none; }
+    .logo-icon { width:40px;height:40px; background:linear-gradient(135deg,var(--primary),var(--secondary)); border-radius:12px; display:flex; align-items:center; justify-content:center; color:white; font-size:20px; }
+    .sidebar-nav { flex:1; padding:16px 12px; overflow-y:auto; }
+    .nav-item { display:flex; align-items:center; gap:12px; padding:12px 16px; border-radius:var(--radius-sm); color:var(--text-secondary); text-decoration:none; cursor:pointer; transition:var(--transition); margin-bottom:4px; font-weight:500; font-size:0.95rem; }
+    .nav-item:hover,.nav-item.active { background:var(--primary); color:white; box-shadow:0 4px 12px rgba(99,102,241,0.3); }
+    .nav-item .material-symbols-rounded { font-size:22px; }
+    .sidebar-footer { padding:16px; border-top:1px solid var(--border); }
+    .user-card { display:flex; align-items:center; gap:12px; padding:12px; border-radius:var(--radius-sm); background:var(--surface); }
+    .user-avatar { width:40px;height:40px; border-radius:50%; object-fit:cover; border:2px solid var(--primary); }
+    .user-name { font-weight:600; font-size:0.9rem; }
+    .user-role { font-size:0.75rem; color:var(--text-secondary); }
+    .main-content { flex:1; margin-left:280px; padding:24px 32px; transition:var(--transition); }
+    .sidebar.collapsed + .main-content { margin-left:80px; }
+    .top-bar { display:flex; justify-content:space-between; align-items:center; margin-bottom:32px; padding:18px 24px; background:linear-gradient(135deg, rgba(91,106,248,0.08), rgba(255,255,255,0.8)); backdrop-filter:blur(20px); border-radius:var(--radius); border:1px solid var(--border); box-shadow:0 8px 24px rgba(37,52,105,0.05); }
+    .page-title { font-size:1.75rem; font-weight:700; background:linear-gradient(135deg,var(--primary),var(--secondary)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+    .top-actions { display:flex; gap:12px; align-items:center; }
+    .btn-icon { width:40px;height:40px; border-radius:50%; border:none; background:var(--surface); color:var(--text); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:var(--transition); font-size:20px; }
+    .btn-icon:hover { background:var(--primary); color:white; transform:scale(1.1); }
+    .btn { display:inline-flex; align-items:center; gap:8px; padding:12px 24px; border-radius:var(--radius-sm); border:none; font-family:inherit; font-size:0.95rem; font-weight:600; cursor:pointer; transition:var(--transition); text-decoration:none; }
+    .btn-primary { background:linear-gradient(135deg,var(--primary),var(--primary-dark)); color:white; box-shadow:0 4px 16px rgba(99,102,241,0.3); }
+    .btn-primary:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(99,102,241,0.4); }
+    .btn-success { background:linear-gradient(135deg,var(--success),#059669); color:white; box-shadow:0 4px 16px rgba(16,185,129,0.3); }
+    .btn-danger { background:linear-gradient(135deg,var(--danger),#dc2626); color:white; box-shadow:0 4px 16px rgba(239,68,68,0.3); }
+    .btn-warning { background:linear-gradient(135deg,var(--warning),#d97706); color:white; box-shadow:0 4px 16px rgba(245,158,11,0.3); }
+    .btn-secondary { background:var(--surface); color:var(--text); border:1px solid var(--border); }
+    .btn-secondary:hover { background:var(--bg); }
+    .btn-sm { padding:8px 16px; font-size:0.85rem; }
+    .btn-lg { padding:16px 32px; font-size:1.05rem; }
+    .stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:20px; margin-bottom:32px; }
+    .stat-card { background:linear-gradient(180deg, rgba(255,255,255,0.88), rgba(247,248,255,0.8)); backdrop-filter:blur(20px); border:1px solid rgba(148,163,184,0.15); border-radius:var(--radius); padding:24px; position:relative; overflow:hidden; transition:var(--transition); }
+    .stat-card::before { content:''; position:absolute; top:0;left:0; width:5px;height:100%; background:linear-gradient(to bottom,var(--primary),var(--secondary)); }
+    .stat-card:hover { transform:translateY(-4px); }
+    .stat-icon { width:48px;height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:24px; margin-bottom:16px; }
+    .stat-icon.primary { background:rgba(99,102,241,0.15); color:var(--primary); }
+    .stat-icon.success { background:rgba(16,185,129,0.15); color:var(--success); }
+    .stat-icon.warning { background:rgba(245,158,11,0.15); color:var(--warning); }
+    .stat-icon.danger { background:rgba(239,68,68,0.15); color:var(--danger); }
+    .stat-icon.info { background:rgba(59,130,246,0.15); color:var(--info); }
+    .stat-value { font-size:2rem; font-weight:800; color:var(--text); margin-bottom:4px; }
+    .stat-label { font-size:0.875rem; color:var(--text-secondary); font-weight:500; }
+    .stat-change { font-size:0.8rem; font-weight:600; margin-top:8px; }
+    .stat-change.positive { color:var(--success); }
+    .stat-change.negative { color:var(--danger); }
+    .charts-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(400px,1fr)); gap:20px; margin-bottom:32px; }
+    .chart-card { background:var(--glass); backdrop-filter:blur(20px); border:1px solid var(--glass-border); border-radius:var(--radius); padding:24px; }
+    .chart-title { font-size:1.1rem; font-weight:700; margin-bottom:20px; color:var(--text); }
+    .chart-container { position:relative; height:300px; }
+    .table-card { background:var(--glass); backdrop-filter:blur(20px); border:1px solid var(--glass-border); border-radius:var(--radius); overflow:hidden; margin-bottom:24px; }
+    .table-header { display:flex; justify-content:space-between; align-items:center; padding:20px 24px; border-bottom:1px solid var(--border); }
+    .table-title { font-size:1.1rem; font-weight:700; }
+    .table-actions { display:flex; gap:8px; }
+    .search-box { position:relative; }
+    .search-box input { padding:10px 16px 10px 40px; border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--surface); color:var(--text); font-family:inherit; font-size:0.9rem; width:280px; transition:var(--transition); }
+    .search-box input:focus { outline:none; border-color:var(--primary); box-shadow:0 0 0 3px rgba(99,102,241,0.1); }
+    .search-box .material-symbols-rounded { position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text-secondary); font-size:18px; }
+    .data-table { width:100%; border-collapse:collapse; }
+    .data-table th { text-align:left; padding:14px 24px; font-size:0.8rem; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-secondary); background:var(--surface); border-bottom:1px solid var(--border); }
+    .data-table td { padding:16px 24px; border-bottom:1px solid var(--border); font-size:0.9rem; color:var(--text); }
+    .data-table tr:hover td { background:rgba(99,102,241,0.03); }
+    .data-table tr:last-child td { border-bottom:none; }
+    .badge { display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:20px; font-size:0.8rem; font-weight:600; }
+    .badge-pending { background:rgba(245,158,11,0.15); color:var(--warning); }
+    .badge-review { background:rgba(59,130,246,0.15); color:var(--info); }
+    .badge-approved { background:rgba(16,185,129,0.15); color:var(--success); }
+    .badge-progress { background:rgba(99,102,241,0.15); color:var(--primary); }
+    .badge-completed { background:rgba(16,185,129,0.2); color:#059669; }
+    .badge-rejected { background:rgba(239,68,68,0.15); color:var(--danger); }
+    .badge-dot { width:8px;height:8px; border-radius:50%; animation:pulse 2s infinite; }
+    .badge-pending .badge-dot { background:var(--warning); }
+    .badge-review .badge-dot { background:var(--info); }
+    .badge-approved .badge-dot { background:var(--success); }
+    .badge-progress .badge-dot { background:var(--primary); }
+    .badge-completed .badge-dot { background:#059669; }
+    .badge-rejected .badge-dot { background:var(--danger); }
+    @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.5;} }
+    .modal-overlay { position:fixed; top:0;left:0;right:0;bottom:0; background:rgba(0,0,0,0.5); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; z-index:1000; opacity:0; visibility:hidden; transition:var(--transition); }
+    .modal-overlay.active { opacity:1; visibility:visible; }
+    .modal { background:var(--surface-solid); border-radius:var(--radius); box-shadow:var(--shadow-lg); max-width:700px; width:90%; max-height:90vh; overflow-y:auto; transform:scale(0.9) translateY(20px); transition:var(--transition); }
+    .modal-overlay.active .modal { transform:scale(1) translateY(0); }
+    .modal-header { display:flex; justify-content:space-between; align-items:center; padding:24px; border-bottom:1px solid var(--border); }
+    .modal-title { font-size:1.25rem; font-weight:700; }
+    .modal-close { width:36px;height:36px; border-radius:50%; border:none; background:var(--bg); color:var(--text); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:var(--transition); }
+    .modal-close:hover { background:var(--danger); color:white; }
+    .modal-body { padding:24px; }
+    .modal-footer { display:flex; justify-content:flex-end; gap:12px; padding:20px 24px; border-top:1px solid var(--border); }
+    .form-group { margin-bottom:20px; }
+    .form-label { display:block; margin-bottom:8px; font-size:0.875rem; font-weight:600; color:var(--text); }
+    .form-label .required { color:var(--danger); }
+    .form-input,.form-select,.form-textarea { width:100%; padding:12px 16px; border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--surface); color:var(--text); font-family:inherit; font-size:0.95rem; transition:var(--transition); }
+    .form-input:focus,.form-select:focus,.form-textarea:focus { outline:none; border-color:var(--primary); box-shadow:0 0 0 3px rgba(99,102,241,0.1); }
+    .form-textarea { min-height:120px; resize:vertical; }
+    .form-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; }
+    .form-hint { font-size:0.8rem; color:var(--text-secondary); margin-top:6px; }
+    .form-error { font-size:0.8rem; color:var(--danger); margin-top:6px; display:none; }
+    .form-group.error .form-input,.form-group.error .form-select,.form-group.error .form-textarea { border-color:var(--danger); }
+    .form-group.error .form-error { display:block; }
+    .file-upload { border:2px dashed var(--border); border-radius:var(--radius-sm); padding:32px; text-align:center; cursor:pointer; transition:var(--transition); }
+    .file-upload:hover { border-color:var(--primary); background:rgba(99,102,241,0.03); }
+    .file-upload input { display:none; }
+    .file-upload-icon { font-size:48px; color:var(--primary); margin-bottom:12px; }
+    .file-upload-text { font-size:0.95rem; color:var(--text); font-weight:500; }
+    .file-upload-hint { font-size:0.8rem; color:var(--text-secondary); margin-top:4px; }
+    .toast-container { position:fixed; top:24px; right:24px; z-index:2000; display:flex; flex-direction:column; gap:12px; }
+    .toast { display:flex; align-items:center; gap:12px; padding:16px 20px; border-radius:var(--radius-sm); background:var(--surface-solid); box-shadow:var(--shadow-lg); color:var(--text); font-weight:500; animation:slideIn 0.3s ease; max-width:400px; border-left:4px solid; }
+    .toast.success { border-left-color:var(--success); }
+    .toast.error { border-left-color:var(--danger); }
+    .toast.warning { border-left-color:var(--warning); }
+    .toast.info { border-left-color:var(--info); }
+    @keyframes slideIn { from{transform:translateX(100%);opacity:0;} to{transform:translateX(0);opacity:1;} }
+    @keyframes slideOut { from{transform:translateX(0);opacity:1;} to{transform:translateX(100%);opacity:0;} }
+    .toast.removing { animation:slideOut 0.3s ease forwards; }
+    .spinner { width:40px;height:40px; border:3px solid var(--border); border-top-color:var(--primary); border-radius:50%; animation:spin 1s linear infinite; }
+    .spinner-sm { width:20px;height:20px; border-width:2px; }
+    @keyframes spin { to{transform:rotate(360deg);} }
+    .loading-overlay { position:fixed; top:0;left:0;right:0;bottom:0; background:rgba(0,0,0,0.3); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; z-index:3000; opacity:0; visibility:hidden; transition:var(--transition); }
+    .loading-overlay.active { opacity:1; visibility:visible; }
+    .loading-box { background:var(--surface-solid); padding:32px 48px; border-radius:var(--radius); display:flex; flex-direction:column; align-items:center; gap:16px; box-shadow:var(--shadow-lg); }
+    .login-page { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px; background:radial-gradient(circle at top, rgba(91,106,248,0.12), transparent 30%), linear-gradient(135deg, #eef4ff 0%, #f9f7ff 100%); }
+    .login-card { background:linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.75)); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.6); border-radius:28px; padding:48px; max-width:500px; width:100%; text-align:center; box-shadow:0 30px 80px rgba(58,75,166,0.18); position:relative; overflow:hidden; }
+    .login-card::before { content:''; position:absolute; inset:0; background:linear-gradient(135deg, rgba(91,106,248,0.08), rgba(255,106,183,0.08)); pointer-events:none; }
+    .login-card > * { position:relative; z-index:1; }
+    .login-logo { width:72px;height:72px; background:linear-gradient(135deg,var(--primary),var(--secondary)); border-radius:18px; display:flex; align-items:center; justify-content:center; margin:0 auto 24px; color:white; font-size:36px; box-shadow:0 16px 32px rgba(91,106,248,0.25); }
+    .login-title { font-size:1.75rem; font-weight:800; margin-bottom:8px; }
+    .login-subtitle { color:var(--text-secondary); margin-bottom:32px; }
+    .login-form .form-group { text-align:left; }
+    .login-form .form-group input { width:100%; }
+    .login-link { color:var(--primary); cursor:pointer; font-weight:600; }
+    .login-link:hover { text-decoration:underline; }
+    .google-btn { display:flex; align-items:center; justify-content:center; gap:12px; width:100%; padding:14px 24px; border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--surface); color:var(--text); font-family:inherit; font-size:1rem; font-weight:600; cursor:pointer; transition:var(--transition); }
+    .google-btn:hover { border-color:var(--primary); background:rgba(99,102,241,0.05); }
+    .pagination { display:flex; align-items:center; justify-content:center; gap:8px; padding:20px; }
+    .page-btn { min-width:36px;height:36px; border-radius:var(--radius-sm); border:1px solid var(--border); background:var(--surface); color:var(--text); font-family:inherit; font-size:0.9rem; font-weight:600; cursor:pointer; transition:var(--transition); display:flex; align-items:center; justify-content:center; }
+    .page-btn:hover { background:var(--primary); color:white; border-color:var(--primary); }
+    .page-btn.active { background:var(--primary); color:white; border-color:var(--primary); }
+    .page-btn:disabled { opacity:0.5; cursor:not-allowed; }
+    .empty-state { text-align:center; padding:64px 24px; }
+    .empty-state-icon { font-size:64px; color:var(--text-secondary); opacity:0.5; margin-bottom:16px; }
+    .empty-state-title { font-size:1.25rem; font-weight:700; margin-bottom:8px; }
+    .empty-state-text { color:var(--text-secondary); margin-bottom:24px; }
+    .invoice-preview { background:white; color:#1e293b; padding:48px; border-radius:var(--radius); max-width:800px; margin:0 auto; }
+    .invoice-header { display:flex; justify-content:space-between; margin-bottom:48px; }
+    .invoice-brand { font-size:1.5rem; font-weight:800; color:var(--primary); }
+    .invoice-title { font-size:2rem; font-weight:800; color:var(--text); }
+    .invoice-meta { text-align:right; }
+    .invoice-meta-item { font-size:0.9rem; margin-bottom:4px; }
+    .invoice-meta-label { color:var(--text-secondary); }
+    .invoice-meta-value { font-weight:600; }
+    .invoice-section { margin-bottom:32px; }
+    .invoice-section-title { font-size:0.8rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--text-secondary); margin-bottom:12px; }
+    .invoice-table { width:100%; border-collapse:collapse; margin-bottom:24px; }
+    .invoice-table th { text-align:left; padding:12px; background:var(--bg); font-size:0.8rem; font-weight:700; text-transform:uppercase; border-bottom:2px solid var(--border); }
+    .invoice-table td { padding:12px; border-bottom:1px solid var(--border); }
+    .invoice-total { text-align:right; font-size:1.25rem; font-weight:800; padding:16px 0; border-top:2px solid var(--primary); }
+    .mobile-toggle { display:none; width:40px;height:40px; border-radius:var(--radius-sm); border:none; background:var(--surface); color:var(--text); cursor:pointer; font-size:24px; }
+    @media (max-width:1024px) { .sidebar { width:80px; } .sidebar .nav-text,.sidebar .logo-text,.sidebar .user-info { display:none; } .main-content { margin-left:80px; } .charts-grid { grid-template-columns:1fr; } }
+    @media (max-width:768px) { .sidebar { transform:translateX(-100%); width:280px; } .sidebar.open { transform:translateX(0); } .sidebar .nav-text,.sidebar .logo-text,.sidebar .user-info { display:block; } .main-content { margin-left:0; padding:16px; } .mobile-toggle { display:flex; } .stats-grid { grid-template-columns:1fr; } .top-bar { flex-wrap:wrap; gap:12px; } .search-box input { width:200px; } .table-header { flex-wrap:wrap; gap:12px; } .data-table { display:block; overflow-x:auto; } }
+    .fade-in { animation:fadeIn 0.4s ease; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
+    ::-webkit-scrollbar { width:8px; height:8px; }
+    ::-webkit-scrollbar-track { background:transparent; }
+    ::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
+    ::-webkit-scrollbar-thumb:hover { background:var(--text-secondary); }
+    .section { display:none; }
+    .section.active { display:block; animation:fadeIn 0.4s ease; }
+    .admin-only { display:none; }
+    .is-admin .admin-only { display:flex; }
+    .is-admin .admin-only.block { display:block; }
+    .is-admin .admin-only.grid { display:grid; }
+    .is-admin .admin-only.inline { display:inline-flex; }
+    .filter-chips { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
+    .chip { padding:8px 16px; border-radius:20px; border:1px solid var(--border); background:var(--surface); color:var(--text); font-family:inherit; font-size:0.85rem; font-weight:500; cursor:pointer; transition:var(--transition); }
+    .chip:hover { border-color:var(--primary); }
+    .chip.active { background:var(--primary); color:white; border-color:var(--primary); }
+    .detail-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:20px; }
+    .detail-item { padding:16px; background:var(--bg); border-radius:var(--radius-sm); }
+    .detail-label { font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-secondary); margin-bottom:6px; }
+    .detail-value { font-size:1rem; font-weight:600; color:var(--text); }
+    .audit-item { display:flex; gap:16px; padding:16px; border-bottom:1px solid var(--border); }
+    .audit-icon { width:40px;height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .audit-icon.create { background:rgba(16,185,129,0.15); color:var(--success); }
+    .audit-icon.update { background:rgba(59,130,246,0.15); color:var(--info); }
+    .audit-icon.delete { background:rgba(239,68,68,0.15); color:var(--danger); }
+    .audit-icon.approve { background:rgba(99,102,241,0.15); color:var(--primary); }
+    .audit-content { flex:1; }
+    .audit-title { font-weight:600; margin-bottom:4px; }
+    .audit-meta { font-size:0.8rem; color:var(--text-secondary); }
+    .sidebar-overlay { position:fixed; top:0;left:0;right:0;bottom:0; background:rgba(0,0,0,0.5); z-index:99; display:none; }
+    .sidebar-overlay.active { display:block; }
+    .error-page { min-height:100vh; display:flex; align-items:center; justify-content:center; flex-direction:column; text-align:center; padding:24px; }
+    .error-code { font-size:8rem; font-weight:800; background:linear-gradient(135deg,var(--danger),var(--warning)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; line-height:1; }
+    .error-title { font-size:1.5rem; font-weight:700; margin-bottom:8px; }
+    .error-text { color:var(--text-secondary); margin-bottom:24px; }
+
+    /* About section specific */
+    .about-hero { text-align:center; padding:40px 20px; }
+    .about-hero h2 { font-size:2.5rem; font-weight:800; margin-bottom:16px; }
+    .about-hero p { max-width:700px; margin:0 auto 20px; color:var(--text-secondary); font-size:1.1rem; line-height:1.8; }
+    .services-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:24px; margin-top:32px; }
+    .service-card { background:var(--glass); backdrop-filter:blur(12px); border:1px solid var(--glass-border); border-radius:var(--radius); padding:24px; transition:var(--transition); }
+    .service-card:hover { transform:translateY(-6px); box-shadow:var(--shadow-lg); }
+    .service-card .icon { font-size:40px; color:var(--primary); margin-bottom:12px; }
+    .service-card h4 { font-size:1.1rem; font-weight:700; margin-bottom:8px; }
+    .service-card p { font-size:0.95rem; color:var(--text-secondary); line-height:1.6; }
+  </style>
+</head>
+<body>
+
+  <!-- Background -->
+  <div class="bg-gradient"></div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-box">
+      <div class="spinner"></div>
+      <span>Loading...</span>
+    </div>
+  </div>
+
+  <!-- Sidebar Overlay -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- ============================================================
+       LOGIN PAGE (Google Sign-In Only)
+  ============================================================ -->
+  <div id="loginPage" class="login-page">
+    <div class="login-card">
+      <div class="login-logo"><span class="material-symbols-rounded">shopping_cart</span></div>
+      <h1 class="login-title">All online service</h1>
+      <p class="login-subtitle">Your Digital Service Management Hub</p>
+      
+      <!-- Google Sign-In Button -->
+      <button class="google-btn" onclick="signInWithGoogle()">
+        <img src="https://www.google.com/favicon.ico" alt="Google" style="width:20px;height:20px;" /> Sign in with Google
+      </button>
+      
+      <div style="margin-top:20px; border-top:1px solid var(--border); padding-top:16px;">
+        <button class="btn btn-secondary btn-sm" onclick="openAboutModal()" style="width:100%;">
+          <span class="material-symbols-rounded">info</span> Learn About All online service
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       APP CONTAINER
+  ============================================================ -->
+  <div id="appContainer" class="app-container" style="display:none;">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <a href="#" class="logo" onclick="navigateTo('dashboard')">
+          <div class="logo-icon"><span class="material-symbols-rounded">shopping_cart</span></div>
+          <span class="logo-text">All online service</span>
+        </a>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="#" class="nav-item active" onclick="navigateTo('dashboard')" id="nav-dashboard">
+          <span class="material-symbols-rounded">dashboard</span><span class="nav-text">Dashboard</span>
+        </a>
+        <a href="#" class="nav-item" onclick="navigateTo('about')" id="nav-about">
+          <span class="material-symbols-rounded">info</span><span class="nav-text">About</span>
+        </a>
+        <a href="#" class="nav-item" onclick="navigateTo('orders')" id="nav-orders">
+          <span class="material-symbols-rounded">receipt_long</span><span class="nav-text">My Orders</span>
+        </a>
+        <a href="#" class="nav-item" onclick="navigateTo('new-order')" id="nav-new-order">
+          <span class="material-symbols-rounded">add_circle</span><span class="nav-text">New Order</span>
+        </a>
+        <!-- Admin-only links -->
+        <a href="#" class="nav-item admin-only" onclick="navigateTo('all-orders')" id="nav-all-orders">
+          <span class="material-symbols-rounded">list_alt</span><span class="nav-text">All Orders</span>
+        </a>
+        <a href="#" class="nav-item admin-only" onclick="navigateTo('users')" id="nav-users">
+          <span class="material-symbols-rounded">group</span><span class="nav-text">Users</span>
+        </a>
+        <a href="#" class="nav-item admin-only" onclick="navigateTo('services')" id="nav-services">
+          <span class="material-symbols-rounded">build</span><span class="nav-text">Services</span>
+        </a>
+        <a href="#" class="nav-item admin-only" onclick="navigateTo('audit')" id="nav-audit">
+          <span class="material-symbols-rounded">history</span><span class="nav-text">Audit Logs</span>
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="user-card">
+          <img src="" alt="" class="user-avatar" id="userAvatar" />
+          <div class="user-info">
+            <div class="user-name" id="userName">User</div>
+            <div class="user-role" id="userRole">Customer</div>
+          </div>
+        </div>
+        <button class="btn btn-secondary" style="width:100%; margin-top:12px;" onclick="signOut()">
+          <span class="material-symbols-rounded">logout</span> Sign Out
+        </button>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content" id="mainContent">
+      <button class="mobile-toggle" onclick="toggleSidebar()">
+        <span class="material-symbols-rounded">menu</span>
+      </button>
+
+      <!-- ===== DASHBOARD (merged) ===== -->
+      <div id="section-dashboard" class="section active">
+        <div class="top-bar">
+          <h1 class="page-title">Dashboard</h1>
+          <div class="top-actions">
+            <button class="btn-icon" onclick="toggleTheme()" title="Toggle Theme">
+              <span class="material-symbols-rounded" id="themeIcon">dark_mode</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- User stats (visible to all) -->
+        <div class="stats-grid" id="userStats">
+          <div class="stat-card"><div class="stat-icon primary"><span class="material-symbols-rounded">receipt</span></div><div class="stat-value" id="userTotalOrders">0</div><div class="stat-label">Total Orders</div></div>
+          <div class="stat-card"><div class="stat-icon warning"><span class="material-symbols-rounded">pending</span></div><div class="stat-value" id="userPendingOrders">0</div><div class="stat-label">Pending</div></div>
+          <div class="stat-card"><div class="stat-icon success"><span class="material-symbols-rounded">check_circle</span></div><div class="stat-value" id="userCompletedOrders">0</div><div class="stat-label">Completed</div></div>
+          <div class="stat-card"><div class="stat-icon info"><span class="material-symbols-rounded">payments</span></div><div class="stat-value" id="userTotalSpent">₹0</div><div class="stat-label">Total Spent</div></div>
+        </div>
+
+        <!-- Admin-only stats & charts -->
+        <div class="admin-only grid" style="width:100%;">
+          <div class="stats-grid" style="grid-column:1/-1;">
+            <div class="stat-card"><div class="stat-icon primary"><span class="material-symbols-rounded">receipt</span></div><div class="stat-value" id="adminTotalOrders">0</div><div class="stat-label">Total Orders (all)</div></div>
+            <div class="stat-card"><div class="stat-icon warning"><span class="material-symbols-rounded">pending</span></div><div class="stat-value" id="adminPendingOrders">0</div><div class="stat-label">Pending</div></div>
+            <div class="stat-card"><div class="stat-icon success"><span class="material-symbols-rounded">check_circle</span></div><div class="stat-value" id="adminCompletedOrders">0</div><div class="stat-label">Completed</div></div>
+            <div class="stat-card"><div class="stat-icon danger"><span class="material-symbols-rounded">payments</span></div><div class="stat-value" id="adminRevenue">₹0</div><div class="stat-label">Total Revenue</div></div>
+            <div class="stat-card"><div class="stat-icon info"><span class="material-symbols-rounded">group</span></div><div class="stat-value" id="adminActiveUsers">0</div><div class="stat-label">Active Users</div></div>
+          </div>
+          <div class="charts-grid" style="grid-column:1/-1;">
+            <div class="chart-card"><div class="chart-title">Revenue Trend (₹)</div><div class="chart-container"><canvas id="revenueChart"></canvas></div></div>
+            <div class="chart-card"><div class="chart-title">Order Status Distribution</div><div class="chart-container"><canvas id="statusChart"></canvas></div></div>
+            <div class="chart-card"><div class="chart-title">Monthly Order Volume</div><div class="chart-container"><canvas id="volumeChart"></canvas></div></div>
+            <div class="chart-card"><div class="chart-title">Service Popularity</div><div class="chart-container"><canvas id="serviceChart"></canvas></div></div>
+          </div>
+        </div>
+
+        <!-- Recent orders (for both) -->
+        <div class="table-card" style="margin-top:20px;">
+          <div class="table-header"><div class="table-title">Recent Orders</div><button class="btn btn-primary btn-sm" onclick="navigateTo('new-order')"><span class="material-symbols-rounded">add</span> New Order</button></div>
+          <div id="userRecentOrders"><div class="empty-state"><div class="empty-state-icon"><span class="material-symbols-rounded">receipt_long</span></div><div class="empty-state-title">No orders yet</div><div class="empty-state-text">Create your first order to get started</div><button class="btn btn-primary" onclick="navigateTo('new-order')">Create Order</button></div></div>
+        </div>
+      </div>
+
+      <!-- ===== ABOUT SECTION ===== -->
+      <div id="section-about" class="section">
+        <div class="top-bar">
+          <h1 class="page-title">About All online service</h1>
+          <div class="top-actions">
+            <button class="btn-icon" onclick="toggleTheme()"><span class="material-symbols-rounded" id="themeIconAbout">dark_mode</span></button>
+          </div>
+        </div>
+
+        <div class="glass-card" style="padding:32px;">
+          <div class="about-hero">
+            <h2>Why Your Business Needs a Website</h2>
+            <p>
+              All online service is a modern service management platform built to simplify client orders,
+              project delivery, and business operations. We combine clean design, smart workflows, and
+              transparent tracking to help teams manage every stage of a service request with ease.
+              Our platform brings structure to growing businesses by making communication, scheduling,
+              and fulfillment more efficient and visible.
+            </p>
+            <p style="margin-top:16px;">
+              At <strong>All online service</strong>, we help you manage the entire process – from client orders to project delivery – 
+              ensuring every service we provide becomes a reliable growth asset for your business.
+            </p>
+          </div>
+
+          <div style="margin-top:48px;">
+            <h3 style="font-size:1.5rem; font-weight:700; text-align:center; margin-bottom:32px;">Our Services</h3>
+            <div class="services-grid">
+              <div class="service-card"><div class="icon"><span class="material-symbols-rounded">design_services</span></div><h4>UI/UX Design</h4><p>Crafting beautiful, intuitive interfaces that delight users and drive engagement.</p></div>
+              <div class="service-card"><div class="icon"><span class="material-symbols-rounded">trending_up</span></div><h4>Digital Marketing</h4><p>Strategic campaigns to boost visibility, attract traffic, and convert leads.</p></div>
+              <div class="service-card"><div class="icon"><span class="material-symbols-rounded">search</span></div><h4>SEO Optimization</h4><p>Improve search rankings and drive organic traffic with proven SEO techniques.</p></div>
+              <div class="service-card"><div class="icon"><span class="material-symbols-rounded">edit_note</span></div><h4>Content Writing</h4><p>Compelling, SEO‑friendly content that tells your brand story and engages audiences.</p></div>
+              <div class="service-card"><div class="icon"><span class="material-symbols-rounded">brush</span></div><h4>Graphic Design</h4><p>Eye‑catching visuals, logos, and branding that make your business unforgettable.</p></div>
+              <div class="service-card"><div class="icon"><span class="material-symbols-rounded">videocam</span></div><h4>Video Production</h4><p>Professional videos that showcase your products, services, and brand personality.</p></div>
+              <div class="service-card"><div class="icon"><span class="material-symbols-rounded">support_agent</span></div><h4>IT Consulting</h4><p>Expert guidance on technology strategy, infrastructure, and digital transformation.</p></div>
+              <div class="service-card"><div class="icon"><span class="material-symbols-rounded">cloud</span></div><h4>Cloud Services</h4><p>Secure, scalable cloud solutions for hosting, storage, and business continuity.</p></div>
+              <div class="service-card"><div class="icon"><span class="material-symbols-rounded">analytics</span></div><h4>Data Analytics</h4><p>Turn data into insights with advanced analytics to drive smarter decisions.</p></div>
+              <div class="service-card"><div class="icon"><span class="material-symbols-rounded">security</span></div><h4>Cybersecurity</h4><p>Protect your business with robust security measures and proactive threat management.</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== MY ORDERS ===== -->
+      <div id="section-orders" class="section">
+        <div class="top-bar"><h1 class="page-title">My Orders</h1><div class="top-actions"><button class="btn-icon" onclick="toggleTheme()"><span class="material-symbols-rounded" id="themeIcon2">dark_mode</span></button></div></div>
+        <div class="table-card">
+          <div class="table-header">
+            <div class="search-box"><span class="material-symbols-rounded">search</span><input type="text" id="userOrderSearch" placeholder="Search orders..." oninput="filterUserOrders()" /></div>
+            <div class="filter-chips" id="userOrderFilters">
+              <button class="chip active" onclick="filterByStatus('all')">All</button>
+              <button class="chip" onclick="filterByStatus('pending')">Pending</button>
+              <button class="chip" onclick="filterByStatus('review')">Review</button>
+              <button class="chip" onclick="filterByStatus('approved')">Approved</button>
+              <button class="chip" onclick="filterByStatus('progress')">In Progress</button>
+              <button class="chip" onclick="filterByStatus('completed')">Completed</button>
+              <button class="chip" onclick="filterByStatus('rejected')">Rejected</button>
+            </div>
+          </div>
+          <div id="userOrdersTable"><div class="empty-state"><div class="empty-state-icon"><span class="material-symbols-rounded">receipt_long</span></div><div class="empty-state-title">No orders found</div></div></div>
+          <div class="pagination" id="userOrdersPagination"></div>
+        </div>
+      </div>
+
+      <!-- ===== NEW ORDER ===== -->
+      <div id="section-new-order" class="section">
+        <div class="top-bar"><h1 class="page-title">Create New Order</h1><div class="top-actions"><button class="btn-icon" onclick="toggleTheme()"><span class="material-symbols-rounded" id="themeIcon3">dark_mode</span></button></div></div>
+        <div class="glass-card" style="padding:32px; max-width:900px;">
+          <form id="orderForm" onsubmit="submitOrder(event)">
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">Full Name <span class="required">*</span></label><input type="text" class="form-input" id="orderFullName" required placeholder="John Doe" /><div class="form-error">Please enter your full name</div></div>
+              <div class="form-group"><label class="form-label">Email <span class="required">*</span></label><input type="email" class="form-input" id="orderEmail" required readonly /><div class="form-hint">Auto-filled from your account</div></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">Phone <span class="required">*</span></label><input type="tel" class="form-input" id="orderPhone" required placeholder="+91 98765 43210" /><div class="form-error">Please enter a valid phone number</div></div>
+              <div class="form-group"><label class="form-label">Company Name</label><input type="text" class="form-input" id="orderCompany" placeholder="Acme Corp. (Optional)" /></div>
+            </div>
+            <div class="form-group"><label class="form-label">Service Required <span class="required">*</span></label><select class="form-select" id="orderService" required><option value="">Select a service...</option></select><div class="form-error">Please select a service</div></div>
+            <div class="form-group"><label class="form-label">Project Description <span class="required">*</span></label><textarea class="form-textarea" id="orderDescription" required placeholder="Describe your project requirements in detail..."></textarea><div class="form-error">Please provide a project description</div></div>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">Budget (INR) <span class="required">*</span></label><input type="number" class="form-input" id="orderBudget" required min="1" placeholder="50000" /><div class="form-error">Please enter a valid budget</div></div>
+              <div class="form-group"><label class="form-label">Deadline <span class="required">*</span></label><input type="date" class="form-input" id="orderDeadline" required /><div class="form-error">Please select a deadline</div></div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Address <span class="required">*</span></label>
+              <div class="form-row"><div class="form-group" style="grid-column:1/-1;"><input type="text" class="form-input" id="orderAddress1" required placeholder="Street Address Line 1" /><div class="form-error">Address line 1 is required</div></div></div>
+              <div class="form-row" style="margin-top:12px;"><div class="form-group"><input type="text" class="form-input" id="orderAddress2" placeholder="Apartment, Suite, etc. (Optional)" /></div></div>
+              <div class="form-row" style="margin-top:12px;">
+                <div class="form-group"><input type="text" class="form-input" id="orderCity" required placeholder="City" /><div class="form-error">City is required</div></div>
+                <div class="form-group"><input type="text" class="form-input" id="orderState" required placeholder="State / Province" /><div class="form-error">State is required</div></div>
+              </div>
+              <div class="form-row" style="margin-top:12px;">
+                <div class="form-group"><input type="text" class="form-input" id="orderZip" required placeholder="PIN Code" /><div class="form-error">PIN Code is required</div></div>
+                <div class="form-group"><input type="text" class="form-input" id="orderCountry" required placeholder="Country" /><div class="form-error">Country is required</div></div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">File Upload (Optional)</label>
+              <div class="file-upload" onclick="document.getElementById('orderFile').click()">
+                <input type="file" id="orderFile" onchange="handleFileUpload(this)" />
+                <div class="file-upload-icon"><span class="material-symbols-rounded">cloud_upload</span></div>
+                <div class="file-upload-text" id="fileUploadText">Click to upload files</div>
+                <div class="file-upload-hint">Max 10MB (PDF, DOC, JPG, PNG)</div>
+              </div>
+              <div id="filePreview" style="margin-top:8px;"></div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Payment Method</label>
+              <div style="display:flex; align-items:center; gap:12px; padding:16px; background:rgba(16,185,129,0.1); border-radius:var(--radius-sm); border:1px solid rgba(16,185,129,0.2);">
+                <span class="material-symbols-rounded" style="color:var(--success); font-size:28px;">payments</span>
+                <div><div style="font-weight:600; color:var(--success);">Cash on Delivery</div><div style="font-size:0.85rem; color:var(--text-secondary);">Pay when your order is delivered</div></div>
+              </div>
+            </div>
+            <div class="modal-footer" style="padding:24px 0 0 0; border:none;">
+              <button type="button" class="btn btn-secondary" onclick="navigateTo('orders')">Cancel</button>
+              <button type="submit" class="btn btn-primary btn-lg"><span class="material-symbols-rounded">send</span> Submit Order</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- ===== ALL ORDERS (Admin) ===== -->
+      <div id="section-all-orders" class="section">
+        <div class="top-bar"><h1 class="page-title">All Orders</h1><div class="top-actions"><button class="btn btn-secondary btn-sm" onclick="exportToExcel()"><span class="material-symbols-rounded">download</span> Export Excel</button><button class="btn btn-secondary btn-sm" onclick="exportToCSV()"><span class="material-symbols-rounded">download</span> Export CSV</button><button class="btn-icon" onclick="toggleTheme()"><span class="material-symbols-rounded" id="themeIcon5">dark_mode</span></button></div></div>
+        <div class="table-card">
+          <div class="table-header">
+            <div class="search-box"><span class="material-symbols-rounded">search</span><input type="text" id="adminOrderSearch" placeholder="Search all orders..." oninput="filterAdminOrders()" /></div>
+            <div class="filter-chips" id="adminOrderFilters">
+              <button class="chip active" onclick="filterAdminByStatus('all')">All</button>
+              <button class="chip" onclick="filterAdminByStatus('pending')">Pending</button>
+              <button class="chip" onclick="filterAdminByStatus('review')">Review</button>
+              <button class="chip" onclick="filterAdminByStatus('approved')">Approved</button>
+              <button class="chip" onclick="filterAdminByStatus('progress')">In Progress</button>
+              <button class="chip" onclick="filterAdminByStatus('completed')">Completed</button>
+              <button class="chip" onclick="filterAdminByStatus('rejected')">Rejected</button>
+            </div>
+          </div>
+          <div id="adminOrdersTable"><div class="empty-state"><div class="empty-state-icon"><span class="material-symbols-rounded">receipt_long</span></div><div class="empty-state-title">No orders yet</div></div></div>
+          <div class="pagination" id="adminOrdersPagination"></div>
+        </div>
+      </div>
+
+      <!-- ===== USERS (Admin) ===== -->
+      <div id="section-users" class="section">
+        <div class="top-bar"><h1 class="page-title">User Management</h1><div class="top-actions"><button class="btn-icon" onclick="toggleTheme()"><span class="material-symbols-rounded" id="themeIcon6">dark_mode</span></button></div></div>
+        <div class="table-card">
+          <div class="table-header"><div class="table-title">All Users</div><div class="search-box"><span class="material-symbols-rounded">search</span><input type="text" id="userSearch" placeholder="Search users..." oninput="filterUsers()" /></div></div>
+          <div id="usersTable"><div class="empty-state"><div class="empty-state-icon"><span class="material-symbols-rounded">group</span></div><div class="empty-state-title">No users found</div></div></div>
+          <div class="pagination" id="usersPagination"></div>
+        </div>
+      </div>
+
+      <!-- ===== SERVICES (Admin) ===== -->
+      <div id="section-services" class="section">
+        <div class="top-bar"><h1 class="page-title">Services Management</h1><div class="top-actions"><button class="btn btn-primary btn-sm" onclick="openServiceModal()"><span class="material-symbols-rounded">add</span> Add Service</button><button class="btn-icon" onclick="toggleTheme()"><span class="material-symbols-rounded" id="themeIcon7">dark_mode</span></button></div></div>
+        <div class="table-card">
+          <div class="table-header"><div class="table-title">Available Services</div></div>
+          <div id="servicesTable"><div class="empty-state"><div class="empty-state-icon"><span class="material-symbols-rounded">build</span></div><div class="empty-state-title">No services configured</div></div></div>
+        </div>
+      </div>
+
+      <!-- ===== AUDIT LOGS (Admin) ===== -->
+      <div id="section-audit" class="section">
+        <div class="top-bar"><h1 class="page-title">Audit Logs</h1><div class="top-actions"><button class="btn-icon" onclick="toggleTheme()"><span class="material-symbols-rounded" id="themeIcon8">dark_mode</span></button></div></div>
+        <div class="table-card">
+          <div class="table-header"><div class="table-title">Recent Admin Actions</div></div>
+          <div id="auditLogs"><div class="empty-state"><div class="empty-state-icon"><span class="material-symbols-rounded">history</span></div><div class="empty-state-title">No audit logs yet</div></div></div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- ============================================================
+   MODALS
+  ============================================================ -->
+
+  <!-- About Modal (for non‑logged‑in users) -->
+  <div class="modal-overlay" id="aboutModal">
+    <div class="modal" style="max-width:800px;">
+      <div class="modal-header"><div class="modal-title">About All online service</div><button class="modal-close" onclick="closeModal('aboutModal')"><span class="material-symbols-rounded">close</span></button></div>
+      <div class="modal-body" id="aboutModalBody">
+        <div class="about-hero" style="text-align:left;">
+          <h2 style="font-size:1.8rem;">Why Smart Service Management Matters</h2>
+          <p style="margin-top:12px;">
+            In today's fast-moving business environment, clear service workflows are essential. Strong client management,
+            transparent status tracking, and efficient order handling help teams stay organized, responsive, and competitive.
+            A well-designed service platform gives your business a clear advantage by improving communication, reducing delays,
+            and creating a more reliable experience for every customer.
+          </p>
+          <p style="margin-top:16px;">
+            At <strong>All online service</strong>, we help you manage the entire process – from client orders to project delivery – 
+            ensuring every service we provide becomes a reliable growth asset for your business.
+          </p>
+        </div>
+        <div style="margin-top:24px;">
+          <h3 style="font-size:1.3rem; font-weight:700; margin-bottom:16px;">Our Services</h3>
+          <div class="services-grid" style="grid-template-columns:1fr 1fr;">
+            <div class="service-card"><span class="material-symbols-rounded" style="color:var(--primary);font-size:32px;">design_services</span><h4>UI/UX Design</h4></div>
+            <div class="service-card"><span class="material-symbols-rounded" style="color:var(--primary);font-size:32px;">trending_up</span><h4>Digital Marketing</h4></div>
+            <div class="service-card"><span class="material-symbols-rounded" style="color:var(--primary);font-size:32px;">search</span><h4>SEO Optimization</h4></div>
+            <div class="service-card"><span class="material-symbols-rounded" style="color:var(--primary);font-size:32px;">edit_note</span><h4>Content Writing</h4></div>
+            <div class="service-card"><span class="material-symbols-rounded" style="color:var(--primary);font-size:32px;">brush</span><h4>Graphic Design</h4></div>
+            <div class="service-card"><span class="material-symbols-rounded" style="color:var(--primary);font-size:32px;">videocam</span><h4>Video Production</h4></div>
+            <div class="service-card"><span class="material-symbols-rounded" style="color:var(--primary);font-size:32px;">support_agent</span><h4>IT Consulting</h4></div>
+            <div class="service-card"><span class="material-symbols-rounded" style="color:var(--primary);font-size:32px;">cloud</span><h4>Cloud Services</h4></div>
+            <div class="service-card"><span class="material-symbols-rounded" style="color:var(--primary);font-size:32px;">analytics</span><h4>Data Analytics</h4></div>
+            <div class="service-card"><span class="material-symbols-rounded" style="color:var(--primary);font-size:32px;">security</span><h4>Cybersecurity</h4></div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('aboutModal')">Close</button></div>
+    </div>
+  </div>
+
+  <!-- Order Detail Modal -->
+  <div class="modal-overlay" id="orderDetailModal">
+    <div class="modal" style="max-width:800px;">
+      <div class="modal-header"><div class="modal-title">Order Details</div><button class="modal-close" onclick="closeModal('orderDetailModal')"><span class="material-symbols-rounded">close</span></button></div>
+      <div class="modal-body" id="orderDetailContent"></div>
+      <div class="modal-footer" id="orderDetailFooter"></div>
+    </div>
+  </div>
+
+  <!-- Status Update Modal -->
+  <div class="modal-overlay" id="statusModal">
+    <div class="modal" style="max-width:500px;">
+      <div class="modal-header"><div class="modal-title">Update Order Status</div><button class="modal-close" onclick="closeModal('statusModal')"><span class="material-symbols-rounded">close</span></button></div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">New Status</label>
+          <select class="form-select" id="newStatus">
+            <option value="pending">Pending</option><option value="review">Under Review</option>
+            <option value="approved">Approved</option><option value="progress">In Progress</option>
+            <option value="completed">Completed</option><option value="rejected">Rejected</option>
+          </select>
+        </div>
+        <div class="form-group" id="rejectReasonGroup" style="display:none;">
+          <label class="form-label">Rejection Reason</label>
+          <textarea class="form-textarea" id="rejectReason" placeholder="Why is this order being rejected?"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('statusModal')">Cancel</button><button class="btn btn-primary" onclick="confirmStatusUpdate()">Update Status</button></div>
+    </div>
+  </div>
+
+  <!-- Service Modal -->
+  <div class="modal-overlay" id="serviceModal">
+    <div class="modal" style="max-width:500px;">
+      <div class="modal-header"><div class="modal-title" id="serviceModalTitle">Add Service</div><button class="modal-close" onclick="closeModal('serviceModal')"><span class="material-symbols-rounded">close</span></button></div>
+      <div class="modal-body">
+        <input type="hidden" id="serviceEditId" />
+        <div class="form-group"><label class="form-label">Service Name <span class="required">*</span></label><input type="text" class="form-input" id="serviceName" required placeholder="e.g., Web Development" /></div>
+        <div class="form-group"><label class="form-label">Description</label><textarea class="form-textarea" id="serviceDesc" placeholder="Service description..."></textarea></div>
+        <div class="form-group"><label class="form-label">Base Price (INR)</label><input type="number" class="form-input" id="servicePrice" min="0" placeholder="0" /></div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('serviceModal')">Cancel</button><button class="btn btn-primary" onclick="saveService()">Save Service</button></div>
+    </div>
+  </div>
+
+  <!-- Invoice Modal -->
+  <div class="modal-overlay" id="invoiceModal">
+    <div class="modal" style="max-width:900px;">
+      <div class="modal-header"><div class="modal-title">Invoice</div><button class="modal-close" onclick="closeModal('invoiceModal')"><span class="material-symbols-rounded">close</span></button></div>
+      <div class="modal-body" id="invoiceContent"></div>
+      <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('invoiceModal')">Close</button><button class="btn btn-primary" onclick="downloadInvoicePDF()"><span class="material-symbols-rounded">download</span> Download PDF</button></div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+   JAVASCRIPT – FIREBASE CLOUD BACKEND
+  ============================================================ -->
+  <script>
+    // ============================================================
+    //  🔑 FIREBASE CONFIG – Your All online service Project
+    // ============================================================
+    const firebaseConfig = {
+      apiKey: "AIzaSyAGEpAPOBzda8XN7auznIwUkBu5UYssplg",
+      authDomain: "websetu-6d29c.firebaseapp.com",
+      projectId: "websetu-6d29c",
+      storageBucket: "websetu-6d29c.firebasestorage.app",
+      messagingSenderId: "933660451349",
+      appId: "1:933660451349:web:2e217d1f66372fac27e41c",
+      measurementId: "G-9PF9KKJNZD"
+    };
+
+    // ============================================================
+    //  👑 SUPER ADMIN EMAIL
+    // ============================================================
+    const SUPER_ADMIN_EMAIL = "dipalimohanty.123@gmail.com";
+
+    // ============================================================
+    //  🔧 INIT FIREBASE
+    // ============================================================
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    const storage = firebase.storage();
+
+    // ============================================================
+    //  🚀 HANDLE REDIRECT RESULT (for fallback sign‑in)
+    // ============================================================
+    auth.getRedirectResult().then((result) => {
+      if (result.user) {
+        console.log('Redirect sign-in successful:', result.user.email);
+      }
+    }).catch((error) => {
+      console.error('Redirect sign-in error:', error);
+    });
+
+    // ============================================================
+    //  🔐 SIGN IN WITH GOOGLE (popup with redirect fallback)
+    // ============================================================
+    function signInWithGoogle() {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: 'select_account' });
+      auth.signInWithPopup(provider)
+        .catch((error) => {
+          if (error.code === 'auth/popup-blocked' || error.code === 'auth/popup-closed-by-user') {
+            auth.signInWithRedirect(provider);
+          } else {
+            showToast('Sign‑in failed: ' + error.message, 'error');
+          }
+        });
+    }
+
+    // ============================================================
+    //  🧠 GLOBAL STATE
+    // ============================================================
+    let currentUser = null;
+    let isAdmin = false;
+    let allOrders = [];
+    let allUsers = [];
+    let allServices = [];
+    let allAuditLogs = [];
+    let charts = {};
+    let userPage = 1, adminPage = 1, usersPage = 1;
+    const ITEMS_PER_PAGE = 10;
+    let userStatusFilter = 'all', adminStatusFilter = 'all';
+    let uploadedFile = null;
+    let currentStatusOrderId = null;
+    let unsubscribeOrders = null;
+    let unsubscribeUsers = null;
+    let unsubscribeServices = null;
+    let unsubscribeAudit = null;
+
+    const STATUS_LABELS = {
+      pending: 'Pending',
+      review: 'Under Review',
+      approved: 'Approved',
+      progress: 'In Progress',
+      completed: 'Completed',
+      rejected: 'Rejected'
+    };
+
+    // ============================================================
+    //  🔐 AUTH FUNCTIONS
+    // ============================================================
+    function signOut() {
+      auth.signOut().then(() => {
+        showToast('Signed out', 'success');
+        document.getElementById('appContainer').style.display = 'none';
+        document.getElementById('loginPage').style.display = 'flex';
+        document.body.classList.remove('is-admin');
+        if (unsubscribeOrders) unsubscribeOrders();
+        if (unsubscribeUsers) unsubscribeUsers();
+        if (unsubscribeServices) unsubscribeServices();
+        if (unsubscribeAudit) unsubscribeAudit();
+        currentUser = null;
+        isAdmin = false;
+      });
+    }
+
+    // ============================================================
+    //  👤 AUTH STATE OBSERVER
+    // ============================================================
+    auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        currentUser = user;
+        isAdmin = user.email === SUPER_ADMIN_EMAIL;
+
+        document.getElementById('loginPage').style.display = 'none';
+        document.getElementById('appContainer').style.display = 'flex';
+        document.getElementById('userAvatar').src = user.photoURL ||
+          'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.displayName || 'User') +
+          '&background=6366f1&color=fff';
+        document.getElementById('userName').textContent = user.displayName || 'User';
+        document.getElementById('userRole').textContent = isAdmin ? 'Super Admin' : 'Customer';
+        document.getElementById('orderEmail').value = user.email;
+
+        if (isAdmin) {
+          document.body.classList.add('is-admin');
+        } else {
+          document.body.classList.remove('is-admin');
+        }
+
+        await saveUserToFirestore(user);
+        startRealtimeListeners();
+        loadServices();
+        navigateTo('dashboard');
+
+      } else {
+        if (unsubscribeOrders) unsubscribeOrders();
+        if (unsubscribeUsers) unsubscribeUsers();
+        if (unsubscribeServices) unsubscribeServices();
+        if (unsubscribeAudit) unsubscribeAudit();
+        document.getElementById('appContainer').style.display = 'none';
+        document.getElementById('loginPage').style.display = 'flex';
+        document.body.classList.remove('is-admin');
+        currentUser = null;
+        isAdmin = false;
+      }
+    });
+
+    // ============================================================
+    //  💾 SAVE USER TO FIRESTORE
+    // ============================================================
+    async function saveUserToFirestore(user) {
+      try {
+        const userRef = db.collection('users').doc(user.uid);
+        const doc = await userRef.get();
+        if (!doc.exists) {
+          await userRef.set({
+            uid: user.uid,
+            email: user.email,
+            displayName: user.displayName || '',
+            photoURL: user.photoURL || '',
+            role: user.email === SUPER_ADMIN_EMAIL ? 'admin' : 'customer',
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+          });
+        } else {
+          const data = doc.data();
+          if (data.role !== 'admin' && user.email === SUPER_ADMIN_EMAIL) {
+            await userRef.update({ role: 'admin' });
+          }
+          await userRef.update({ lastLogin: firebase.firestore.FieldValue.serverTimestamp() });
+        }
+      } catch (e) {
+        console.error('Save user error:', e);
+      }
+    }
+
+    // ============================================================
+    //  🔄 REAL‑TIME LISTENERS
+    // ============================================================
+    function startRealtimeListeners() {
+      let ordersQuery = db.collection('orders').orderBy('createdAt', 'desc');
+      if (!isAdmin) {
+        ordersQuery = ordersQuery.where('userId', '==', currentUser.uid);
+      }
+      if (unsubscribeOrders) unsubscribeOrders();
+      unsubscribeOrders = ordersQuery.onSnapshot((snapshot) => {
+        const orders = [];
+        snapshot.forEach((doc) => orders.push({ id: doc.id, ...doc.data() }));
+        allOrders = orders;
+        refreshDashboard();
+        if (isAdmin) {
+          refreshAdminDashboard();
+          renderAdminOrders();
+        } else {
+          renderUserOrders();
+        }
+      }, (error) => {
+        console.error('Orders listener error:', error);
+        showToast('Error loading orders', 'error');
+      });
+
+      if (isAdmin) {
+        if (unsubscribeUsers) unsubscribeUsers();
+        unsubscribeUsers = db.collection('users').onSnapshot((snapshot) => {
+          allUsers = [];
+          snapshot.forEach((doc) => allUsers.push({ id: doc.id, ...doc.data() }));
+          document.getElementById('adminActiveUsers').textContent = allUsers.length;
+          renderUsers();
+        });
+      }
+
+      if (unsubscribeServices) unsubscribeServices();
+      unsubscribeServices = db.collection('services').orderBy('name').onSnapshot((snapshot) => {
+        allServices = [];
+        snapshot.forEach((doc) => allServices.push({ id: doc.id, ...doc.data() }));
+        renderServiceSelect();
+        if (isAdmin) renderServices();
+      });
+
+      if (isAdmin) {
+        if (unsubscribeAudit) unsubscribeAudit();
+        unsubscribeAudit = db.collection('auditLogs')
+          .orderBy('timestamp', 'desc')
+          .limit(100)
+          .onSnapshot((snapshot) => {
+            allAuditLogs = [];
+            snapshot.forEach((doc) => allAuditLogs.push({ id: doc.id, ...doc.data() }));
+            renderAuditLogs();
+          });
+      }
+    }
+
+    // ============================================================
+    //  🛠 SERVICES CRUD
+    // ============================================================
+    function loadServices() {
+      // Services are loaded via real-time listener
+    }
+
+    function renderServiceSelect() {
+      const sel = document.getElementById('orderService');
+      if (!sel) return;
+      sel.innerHTML = '<option value="">Select a service...</option>';
+      allServices.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.name;
+        opt.textContent = s.name + (s.price ? ' (₹' + s.price + ')' : '');
+        sel.appendChild(opt);
+      });
+    }
+
+    function renderServices() {
+      const container = document.getElementById('servicesTable');
+      if (allServices.length === 0) {
+        container.innerHTML =
+          '<div class="empty-state"><div class="empty-state-icon"><span class="material-symbols-rounded">build</span></div><div class="empty-state-title">No services configured</div></div>';
+        return;
+      }
+      let html =
+        '<table class="data-table"><thead><tr><th>Service Name</th><th>Description</th><th>Base Price</th><th>Actions</th></tr></thead><tbody>';
+      allServices.forEach(s => {
+        html += '<tr><td><strong>' + escapeHtml(s.name) + '</strong></td><td>' + escapeHtml(s.description || '-') +
+          '</td><td>₹' + (s.price || 0) + '</td><td>';
+        html += '<button class="btn btn-sm btn-secondary" onclick="editService(\'' + s.id +
+          '\')" style="margin-right:8px;"><span class="material-symbols-rounded">edit</span></button>';
+        html += '<button class="btn btn-sm btn-danger" onclick="deleteService(\'' + s.id +
+          '\')"><span class="material-symbols-rounded">delete</span></button>';
+        html += '</td></tr>';
+      });
+      html += '</tbody></table>';
+      container.innerHTML = html;
+    }
+
+    function openServiceModal(editId) {
+      document.getElementById('serviceEditId').value = editId || '';
+      document.getElementById('serviceModalTitle').textContent = editId ? 'Edit Service' : 'Add Service';
+      if (editId) {
+        const s = allServices.find(x => x.id === editId);
+        if (s) {
+          document.getElementById('serviceName').value = s.name;
+          document.getElementById('serviceDesc').value = s.description || '';
+          document.getElementById('servicePrice').value = s.price || '';
+        }
+      } else {
+        document.getElementById('serviceName').value = '';
+        document.getElementById('serviceDesc').value = '';
+        document.getElementById('servicePrice').value = '';
+      }
+      openModal('serviceModal');
+    }
+
+    function saveService() {
+      const name = document.getElementById('serviceName').value.trim();
+      const desc = document.getElementById('serviceDesc').value.trim();
+      const price = parseFloat(document.getElementById('servicePrice').value) || 0;
+      const editId = document.getElementById('serviceEditId').value;
+      if (!name) { showToast('Service name is required', 'error'); return; }
+
+      const data = { name, description: desc, price, updatedAt: firebase.firestore.FieldValue.serverTimestamp() };
+
+      if (editId) {
+        db.collection('services').doc(editId).update(data)
+          .then(() => {
+            showToast('Service updated', 'success');
+            closeModal('serviceModal');
+            logAudit('update', 'Service', editId, 'Updated service: ' + name);
+          })
+          .catch(err => showToast('Error: ' + err.message, 'error'));
+      } else {
+        data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+        db.collection('services').add(data)
+          .then((docRef) => {
+            showToast('Service added', 'success');
+            closeModal('serviceModal');
+            logAudit('create', 'Service', docRef.id, 'Added service: ' + name);
+          })
+          .catch(err => showToast('Error: ' + err.message, 'error'));
+      }
+    }
+
+    function editService(id) { openServiceModal(id); }
+
+    function deleteService(id) {
+      if (!confirm('Delete this service?')) return;
+      const s = allServices.find(x => x.id === id);
+      db.collection('services').doc(id).delete()
+        .then(() => {
+          showToast('Service deleted', 'success');
+          logAudit('delete', 'Service', id, 'Deleted service: ' + (s ? s.name : id));
+        })
+        .catch(err => showToast('Error: ' + err.message, 'error'));
+    }
+
+    // ============================================================
+    //  📦 ORDERS CRUD
+    // ============================================================
+    function submitOrder(e) {
+      e.preventDefault();
+      showLoading(true);
+
+      const orderData = {
+        userId: currentUser.uid,
+        userEmail: currentUser.email,
+        userName: currentUser.displayName || currentUser.email,
+        fullName: document.getElementById('orderFullName').value.trim(),
+        email: document.getElementById('orderEmail').value,
+        phone: document.getElementById('orderPhone').value.trim(),
+        company: document.getElementById('orderCompany').value.trim(),
+        service: document.getElementById('orderService').value,
+        description: document.getElementById('orderDescription').value.trim(),
+        budget: parseFloat(document.getElementById('orderBudget').value) || 0,
+        deadline: document.getElementById('orderDeadline').value,
+        address: {
+          line1: document.getElementById('orderAddress1').value.trim(),
+          line2: document.getElementById('orderAddress2').value.trim(),
+          city: document.getElementById('orderCity').value.trim(),
+          state: document.getElementById('orderState').value.trim(),
+          zip: document.getElementById('orderZip').value.trim(),
+          country: document.getElementById('orderCountry').value.trim()
+        },
+        paymentMethod: 'Cash on Delivery',
+        status: 'pending',
+        statusHistory: [{ status: 'pending', timestamp: new Date().toISOString(), note: 'Order submitted' }],
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+
+      if (uploadedFile) {
+        const fileRef = storage.ref('orders/' + currentUser.uid + '/' + Date.now() + '_' + uploadedFile.name);
+        fileRef.put(uploadedFile)
+          .then((snapshot) => snapshot.ref.getDownloadURL())
+          .then((url) => {
+            orderData.fileUrl = url;
+            orderData.fileName = uploadedFile.name;
+            return saveOrderToFirestore(orderData);
+          })
+          .catch((error) => {
+            showLoading(false);
+            showToast('File upload failed: ' + error.message, 'error');
+          });
+      } else {
+        saveOrderToFirestore(orderData);
+      }
+    }
+
+    function saveOrderToFirestore(orderData) {
+      db.collection('orders').add(orderData)
+        .then((docRef) => {
+          showLoading(false);
+          showToast('Order submitted successfully!', 'success');
+          document.getElementById('orderForm').reset();
+          document.getElementById('orderEmail').value = currentUser.email;
+          uploadedFile = null;
+          document.getElementById('fileUploadText').textContent = 'Click to upload files';
+          document.getElementById('filePreview').innerHTML = '';
+          logAudit('create', 'Order', docRef.id, 'Created order for ' + orderData.service);
+          navigateTo('orders');
+        })
+        .catch((error) => {
+          showLoading(false);
+          showToast('Error: ' + error.message, 'error');
+        });
+    }
+
+    function handleFileUpload(input) {
+      const file = input.files[0];
+      if (!file) return;
+      if (file.size > 10 * 1024 * 1024) { showToast('File too large. Max 10MB.', 'error'); return; }
+      uploadedFile = file;
+      document.getElementById('fileUploadText').textContent = file.name;
+      document.getElementById('filePreview').innerHTML =
+        '<div style="display:flex; align-items:center; gap:8px; padding:8px 12px; background:rgba(99,102,241,0.1); border-radius:8px;">' +
+        '<span class="material-symbols-rounded" style="color:var(--primary);">description</span>' +
+        '<span style="font-weight:500;">' + escapeHtml(file.name) + '</span> ' +
+        '<span style="color:var(--text-secondary); font-size:0.8rem;">(' + formatFileSize(file.size) + ')</span></div>';
+    }
+
+    function formatFileSize(bytes) {
+      if (bytes === 0) return '0 Bytes';
+      const k = 1024;
+      const sizes = ['Bytes', 'KB', 'MB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    // ============================================================
+    //  📊 DASHBOARD
+    // ============================================================
+    function refreshDashboard() {
+      const orders = isAdmin ? allOrders : allOrders.filter(o => o.userId === currentUser.uid);
+      const total = orders.length;
+      const pending = orders.filter(o => o.status === 'pending').length;
+      const completed = orders.filter(o => o.status === 'completed').length;
+      const spent = orders.reduce((sum, o) => sum + (o.budget || 0), 0);
+      document.getElementById('userTotalOrders').textContent = total;
+      document.getElementById('userPendingOrders').textContent = pending;
+      document.getElementById('userCompletedOrders').textContent = completed;
+      document.getElementById('userTotalSpent').textContent = '₹' + spent.toLocaleString();
+
+      const recent = orders.slice(0, 5);
+      const container = document.getElementById('userRecentOrders');
+      if (recent.length === 0) {
+        container.innerHTML =
+          '<div class="empty-state"><div class="empty-state-icon"><span class="material-symbols-rounded">receipt_long</span></div><div class="empty-state-title">No orders yet</div><div class="empty-state-text">Create your first order to get started</div><button class="btn btn-primary" onclick="navigateTo(\'new-order\')">Create Order</button></div>';
+        return;
+      }
+      let html =
+        '<table class="data-table"><thead><tr><th>Order ID</th><th>Service</th><th>Date</th><th>Status</th><th>Budget</th><th>Actions</th></tr></thead><tbody>';
+      recent.forEach(o => {
+        html += '<tr><td>#' + o.id.slice(-6).toUpperCase() + '</td><td>' + escapeHtml(o.service) +
+          '</td><td>' + formatDate(o.createdAt) + '</td><td>' + getStatusBadge(o.status) +
+          '</td><td>₹' + (o.budget || 0).toLocaleString() + '</td><td>';
+        html += '<button class="btn btn-sm btn-secondary" onclick="viewOrder(\'' + o.id +
+          '\')" style="margin-right:8px;"><span class="material-symbols-rounded">visibility</span></button>';
+        if (o.status === 'pending' && (isAdmin || o.userId === currentUser.uid)) {
+          html += '<button class="btn btn-sm btn-secondary" onclick="editOrder(\'' + o.id +
+            '\')" style="margin-right:8px;"><span class="material-symbols-rounded">edit</span></button>';
+        }
+        html += '<button class="btn btn-sm btn-primary" onclick="generateInvoice(\'' + o.id +
+          '\')"><span class="material-symbols-rounded">receipt</span></button>';
+        html += '</td></tr>';
+      });
+      html += '</tbody></table>';
+      container.innerHTML = html;
+    }
+
+    // ============================================================
+    //  📈 ADMIN DASHBOARD
+    // ============================================================
+    function refreshAdminDashboard() {
+      if (!isAdmin) return;
+      const orders = allOrders;
+      const total = orders.length;
+      const pending = orders.filter(o => o.status === 'pending').length;
+      const completed = orders.filter(o => o.status === 'completed').length;
+      const revenue = orders.reduce((sum, o) => sum + (o.budget || 0), 0);
+      document.getElementById('adminTotalOrders').textContent = total;
+      document.getElementById('adminPendingOrders').textContent = pending;
+      document.getElementById('adminCompletedOrders').textContent = completed;
+      document.getElementById('adminRevenue').textContent = '₹' + revenue.toLocaleString();
+      document.getElementById('adminActiveUsers').textContent = allUsers.length;
+      renderCharts(orders);
+    }
+
+    function renderCharts(orders) {
+      const ctxRevenue = document.getElementById('revenueChart');
+      const ctxStatus = document.getElementById('statusChart');
+      const ctxVolume = document.getElementById('volumeChart');
+      const ctxService = document.getElementById('serviceChart');
+      if (!ctxRevenue) return;
+
+      Object.values(charts).forEach(c => c && c.destroy());
+
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      const textColor = isDark ? '#f1f5f9' : '#1e293b';
+      const gridColor = isDark ? 'rgba(148,163,184,0.1)' : 'rgba(148,163,184,0.2)';
+
+      const months = [];
+      const revenueData = [];
+      for (let i = 5; i >= 0; i--) {
+        const d = new Date();
+        d.setMonth(d.getMonth() - i);
+        const monthKey = d.toISOString().slice(0, 7);
+        months.push(d.toLocaleString('default', { month: 'short' }));
+        const monthRevenue = orders.filter(o => {
+          const oDate = o.createdAt && o.createdAt.toDate ? o.createdAt.toDate() : new Date(o.createdAt);
+          return oDate.toISOString().slice(0, 7) === monthKey;
+        }).reduce((sum, o) => sum + (o.budget || 0), 0);
+        revenueData.push(monthRevenue);
+      }
+      charts.revenue = new Chart(ctxRevenue, {
+        type: 'line',
+        data: {
+          labels: months,
+          datasets: [{ label: 'Revenue (₹)', data: revenueData, borderColor: '#6366f1',
+            backgroundColor: 'rgba(99,102,241,0.1)', fill: true, tension: 0.4, borderWidth: 3 }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { ticks: { color: textColor }, grid: { color: gridColor } },
+            y: { ticks: { color: textColor }, grid: { color: gridColor } }
+          }
+        }
+      });
+
+      const statusCounts = {};
+      Object.keys(STATUS_LABELS).forEach(s => statusCounts[s] = orders.filter(o => o.status === s).length);
+      charts.status = new Chart(ctxStatus, {
+        type: 'doughnut',
+        data: {
+          labels: Object.values(STATUS_LABELS),
+          datasets: [{ data: Object.values(statusCounts), backgroundColor: ['#f59e0b', '#3b82f6', '#10b981',
+              '#6366f1', '#059669', '#ef4444'
+            ], borderWidth: 0 }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'bottom', labels: { color: textColor, padding: 16 } } }
+        }
+      });
+
+      const volumeMonths = [];
+      const volumeData = [];
+      for (let i = 5; i >= 0; i--) {
+        const d = new Date();
+        d.setMonth(d.getMonth() - i);
+        const monthKey = d.toISOString().slice(0, 7);
+        volumeMonths.push(d.toLocaleString('default', { month: 'short' }));
+        const count = orders.filter(o => {
+          const oDate = o.createdAt && o.createdAt.toDate ? o.createdAt.toDate() : new Date(o.createdAt);
+          return oDate.toISOString().slice(0, 7) === monthKey;
+        }).length;
+        volumeData.push(count);
+      }
+      charts.volume = new Chart(ctxVolume, {
+        type: 'bar',
+        data: {
+          labels: volumeMonths,
+          datasets: [{ label: 'Orders', data: volumeData, backgroundColor: '#ec4899', borderRadius: 8 }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { ticks: { color: textColor }, grid: { color: gridColor } },
+            y: { ticks: { color: textColor }, grid: { color: gridColor } }
+          }
+        }
+      });
+
+      const serviceCounts = {};
+      orders.forEach(o => { serviceCounts[o.service] = (serviceCounts[o.service] || 0) + 1; });
+      charts.service = new Chart(ctxService, {
+        type: 'bar',
+        data: {
+          labels: Object.keys(serviceCounts),
+          datasets: [{ label: 'Orders', data: Object.values(serviceCounts), backgroundColor: '#6366f1',
+            borderRadius: 8 }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          indexAxis: 'y',
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { ticks: { color: textColor }, grid: { color: gridColor } },
+            y: { ticks: { color: textColor }, grid: { color: gridColor } }
+          }
+        }
+      });
+    }
+
+    // ============================================================
+    //  📋 USER ORDERS
+    // ============================================================
+    function renderUserOrders() {
+      let orders = allOrders.filter(o => o.userId === currentUser.uid);
+      const search = document.getElementById('userOrderSearch').value.toLowerCase();
+      if (search) {
+        orders = orders.filter(o =>
+          (o.service && o.service.toLowerCase().includes(search)) ||
+          (o.id && o.id.toLowerCase().includes(search)) ||
+          (o.description && o.description.toLowerCase().includes(search))
+        );
+      }
+      if (userStatusFilter !== 'all') {
+        orders = orders.filter(o => o.status === userStatusFilter);
+      }
+      const totalPages = Math.ceil(orders.length / ITEMS_PER_PAGE) || 1;
+      const start = (userPage - 1) * ITEMS_PER_PAGE;
+      const paginated = orders.slice(start, start + ITEMS_PER_PAGE);
+
+      const container = document.getElementById('userOrdersTable');
+      if (paginated.length === 0) {
+        container.innerHTML =
+          '<div class="empty-state"><div class="empty-state-icon"><span class="material-symbols-rounded">receipt_long</span></div><div class="empty-state-title">No orders found</div></div>';
+      } else {
+        let html =
+          '<table class="data-table"><thead><tr><th>Order ID</th><th>Service</th><th>Date</th><th>Status</th><th>Budget</th><th>Actions</th></tr></thead><tbody>';
+        paginated.forEach(o => {
+          html += '<tr><td>#' + o.id.slice(-6).toUpperCase() + '</td><td>' + escapeHtml(o.service) +
+            '</td><td>' + formatDate(o.createdAt) + '</td><td>' + getStatusBadge(o.status) +
+            '</td><td>₹' + (o.budget || 0).toLocaleString() + '</td><td>';
+          html += '<button class="btn btn-sm btn-secondary" onclick="viewOrder(\'' + o.id +
+            '\')" style="margin-right:8px;"><span class="material-symbols-rounded">visibility</span></button>';
+          if (o.status === 'pending' && o.userId === currentUser.uid) {
+            html += '<button class="btn btn-sm btn-secondary" onclick="editOrder(\'' + o.id +
+              '\')" style="margin-right:8px;"><span class="material-symbols-rounded">edit</span></button>';
+          }
+          html += '<button class="btn btn-sm btn-primary" onclick="generateInvoice(\'' + o.id +
+            '\')"><span class="material-symbols-rounded">receipt</span></button>';
+          html += '</td></tr>';
+        });
+        html += '</tbody></table>';
+        container.innerHTML = html;
+      }
+      renderPagination('userOrdersPagination', userPage, totalPages, (p) => { userPage = p;
+        renderUserOrders(); });
+    }
+
+    function filterUserOrders() { userPage = 1;
+      renderUserOrders(); }
+
+    function filterByStatus(status) {
+      userStatusFilter = status;
+      userPage = 1;
+      document.querySelectorAll('#userOrderFilters .chip').forEach(c => c.classList.remove('active'));
+      event.target.classList.add('active');
+      renderUserOrders();
+    }
+
+    // ============================================================
+    //  📋 ADMIN ORDERS
+    // ============================================================
+    function renderAdminOrders() {
+      if (!isAdmin) return;
+      let orders = [...allOrders];
+      const search = document.getElementById('adminOrderSearch').value.toLowerCase();
+      if (search) {
+        orders = orders.filter(o =>
+          (o.service && o.service.toLowerCase().includes(search)) ||
+          (o.id && o.id.toLowerCase().includes(search)) ||
+          (o.userEmail && o.userEmail.toLowerCase().includes(search)) ||
+          (o.fullName && o.fullName.toLowerCase().includes(search))
+        );
+      }
+      if (adminStatusFilter !== 'all') {
+        orders = orders.filter(o => o.status === adminStatusFilter);
+      }
+      const totalPages = Math.ceil(orders.length / ITEMS_PER_PAGE) || 1;
+      const start = (adminPage - 1) * ITEMS_PER_PAGE;
+      const paginated = orders.slice(start, start + ITEMS_PER_PAGE);
+
+      const container = document.getElementById('adminOrdersTable');
+      if (paginated.length === 0) {
+        container.innerHTML =
+          '<div class="empty-state"><div class="empty-state-icon"><span class="material-symbols-rounded">receipt_long</span></div><div class="empty-state-title">No orders found</div></div>';
+      } else {
+        let html =
+          '<table class="data-table"><thead><tr><th>Order ID</th><th>Customer</th><th>Service</th><th>Date</th><th>Status</th><th>Budget</th><th>Actions</th></tr></thead><tbody>';
+        paginated.forEach(o => {
+          html += '<tr><td>#' + o.id.slice(-6).toUpperCase() + '</td><td>' + escapeHtml(o.fullName || o
+            .userName || 'Unknown') +
+            '<br><small style="color:var(--text-secondary);">' + escapeHtml(o.userEmail || '') +
+            '</small></td><td>' + escapeHtml(o.service) + '</td><td>' + formatDate(o.createdAt) +
+            '</td><td>' + getStatusBadge(o.status) + '</td><td>₹' + (o.budget || 0).toLocaleString() +
+            '</td><td>';
+          html +=
+            '<button class="btn btn-sm btn-secondary" onclick="viewOrder(\'' + o.id + '\')" style="margin-right:4px;" title="View"><span class="material-symbols-rounded">visibility</span></button>';
+          html +=
+            '<button class="btn btn-sm btn-warning" onclick="openStatusModal(\'' + o.id + '\')" style="margin-right:4px;" title="Update Status"><span class="material-symbols-rounded">update</span></button>';
+          html +=
+            '<button class="btn btn-sm btn-primary" onclick="generateInvoice(\'' + o.id + '\')" style="margin-right:4px;" title="Invoice"><span class="material-symbols-rounded">receipt</span></button>';
+          html +=
+            '<button class="btn btn-sm btn-danger" onclick="deleteOrder(\'' + o.id + '\')" title="Delete"><span class="material-symbols-rounded">delete</span></button>';
+          html += '</td></tr>';
+        });
+        html += '</tbody></table>';
+        container.innerHTML = html;
+      }
+      renderPagination('adminOrdersPagination', adminPage, totalPages, (p) => { adminPage = p;
+        renderAdminOrders(); });
+    }
+
+    function filterAdminOrders() { adminPage = 1;
+      renderAdminOrders(); }
+
+    function filterAdminByStatus(status) {
+      adminStatusFilter = status;
+      adminPage = 1;
+      document.querySelectorAll('#adminOrderFilters .chip').forEach(c => c.classList.remove('active'));
+      event.target.classList.add('active');
+      renderAdminOrders();
+    }
+
+    // ============================================================
+    //  🔍 ORDER ACTIONS
+    // ============================================================
+    function viewOrder(id) {
+      const order = allOrders.find(o => o.id === id);
+      if (!order) return;
+      const canEdit = order.status === 'pending' && (isAdmin || o.userId === currentUser.uid);
+
+      let html = '<div class="detail-grid">';
+      html += '<div class="detail-item"><div class="detail-label">Order ID</div><div class="detail-value">#' +
+        order.id.slice(-6).toUpperCase() + '</div></div>';
+      html += '<div class="detail-item"><div class="detail-label">Status</div><div class="detail-value">' +
+        getStatusBadge(order.status) + '</div></div>';
+      html += '<div class="detail-item"><div class="detail-label">Service</div><div class="detail-value">' +
+        escapeHtml(order.service) + '</div></div>';
+      html += '<div class="detail-item"><div class="detail-label">Budget</div><div class="detail-value">₹' +
+        (order.budget || 0).toLocaleString() + '</div></div>';
+      html += '<div class="detail-item"><div class="detail-label">Full Name</div><div class="detail-value">' +
+        escapeHtml(order.fullName) + '</div></div>';
+      html += '<div class="detail-item"><div class="detail-label">Email</div><div class="detail-value">' +
+        escapeHtml(order.email) + '</div></div>';
+      html += '<div class="detail-item"><div class="detail-label">Phone</div><div class="detail-value">' +
+        escapeHtml(order.phone) + '</div></div>';
+      html += '<div class="detail-item"><div class="detail-label">Company</div><div class="detail-value">' +
+        escapeHtml(order.company || '-') + '</div></div>';
+      html +=
+        '<div class="detail-item" style="grid-column:1/-1;"><div class="detail-label">Project Description</div><div class="detail-value">' +
+        escapeHtml(order.description) + '</div></div>';
+      html += '<div class="detail-item"><div class="detail-label">Deadline</div><div class="detail-value">' +
+        (order.deadline || '-') + '</div></div>';
+      html += '<div class="detail-item"><div class="detail-label">Payment</div><div class="detail-value">' +
+        escapeHtml(order.paymentMethod) + '</div></div>';
+      html +=
+        '<div class="detail-item" style="grid-column:1/-1;"><div class="detail-label">Address</div><div class="detail-value">' +
+        formatAddress(order.address) + '</div></div>';
+      if (order.fileUrl) {
+        html +=
+          '<div class="detail-item" style="grid-column:1/-1;"><div class="detail-label">Attached File</div><div class="detail-value"><a href="' +
+          order.fileUrl + '" target="_blank" style="color:var(--primary);"><span class="material-symbols-rounded" style="vertical-align:middle;">attach_file</span> ' +
+          escapeHtml(order.fileName || 'Download') + '</a></div></div>';
+      }
+      html += '</div>';
+
+      if (order.statusHistory && order.statusHistory.length > 0) {
+        html += '<div style="margin-top:24px;"><div class="detail-label">Status History</div>';
+        order.statusHistory.forEach(h => {
+          html +=
+            '<div style="display:flex; align-items:center; gap:12px; padding:8px 0; border-bottom:1px solid var(--border);">' +
+            '<span class="badge badge-' + h.status + '">' + STATUS_LABELS[h.status] + '</span>' +
+            '<span style="color:var(--text-secondary); font-size:0.85rem;">' + formatDate(h.timestamp) +
+            '</span>' +
+            (h.note ? '<span style="color:var(--text-secondary); font-size:0.85rem;">' + escapeHtml(h.note) +
+              '</span>' : '') +
+            '</div>';
+        });
+        html += '</div>';
+      }
+      document.getElementById('orderDetailContent').innerHTML = html;
+
+      let footerHtml = '<button class="btn btn-secondary" onclick="closeModal(\'orderDetailModal\')">Close</button>';
+      footerHtml += '<button class="btn btn-primary" onclick="generateInvoice(\'' + id +
+        '\')" style="margin-left:8px;"><span class="material-symbols-rounded">receipt</span> View Invoice</button>';
+      if (canEdit) {
+        footerHtml += '<button class="btn btn-warning" onclick="closeModal(\'orderDetailModal\'); editOrder(\'' + id +
+          '\')" style="margin-left:8px;"><span class="material-symbols-rounded">edit</span> Edit</button>';
+      }
+      if (isAdmin) {
+        footerHtml += '<button class="btn btn-danger" onclick="closeModal(\'orderDetailModal\'); deleteOrder(\'' + id +
+          '\')" style="margin-left:8px;"><span class="material-symbols-rounded">delete</span> Delete</button>';
+      }
+      document.getElementById('orderDetailFooter').innerHTML = footerHtml;
+      openModal('orderDetailModal');
+    }
+
+    function editOrder(id) {
+      const order = allOrders.find(o => o.id === id);
+      if (!order || order.status !== 'pending') {
+        showToast('Only pending orders can be edited', 'error');
+        return;
+      }
+      if (!isAdmin && order.userId !== currentUser.uid) {
+        showToast('You can only edit your own orders', 'error');
+        return;
+      }
+      document.getElementById('orderFullName').value = order.fullName || '';
+      document.getElementById('orderEmail').value = order.email || '';
+      document.getElementById('orderPhone').value = order.phone || '';
+      document.getElementById('orderCompany').value = order.company || '';
+      document.getElementById('orderService').value = order.service || '';
+      document.getElementById('orderDescription').value = order.description || '';
+      document.getElementById('orderBudget').value = order.budget || '';
+      document.getElementById('orderDeadline').value = order.deadline || '';
+      if (order.address) {
+        document.getElementById('orderAddress1').value = order.address.line1 || '';
+        document.getElementById('orderAddress2').value = order.address.line2 || '';
+        document.getElementById('orderCity').value = order.address.city || '';
+        document.getElementById('orderState').value = order.address.state || '';
+        document.getElementById('orderZip').value = order.address.zip || '';
+        document.getElementById('orderCountry').value = order.address.country || '';
+      }
+      const form = document.getElementById('orderForm');
+      form.onsubmit = function(e) { updateOrder(e, id); };
+      navigateTo('new-order');
+      showToast('Editing order #' + id.slice(-6).toUpperCase(), 'info');
+    }
+
+    function updateOrder(e, id) {
+      e.preventDefault();
+      showLoading(true);
+      const updateData = {
+        fullName: document.getElementById('orderFullName').value.trim(),
+        phone: document.getElementById('orderPhone').value.trim(),
+        company: document.getElementById('orderCompany').value.trim(),
+        service: document.getElementById('orderService').value,
+        description: document.getElementById('orderDescription').value.trim(),
+        budget: parseFloat(document.getElementById('orderBudget').value) || 0,
+        deadline: document.getElementById('orderDeadline').value,
+        address: {
+          line1: document.getElementById('orderAddress1').value.trim(),
+          line2: document.getElementById('orderAddress2').value.trim(),
+          city: document.getElementById('orderCity').value.trim(),
+          state: document.getElementById('orderState').value.trim(),
+          zip: document.getElementById('orderZip').value.trim(),
+          country: document.getElementById('orderCountry').value.trim()
+        },
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+      db.collection('orders').doc(id).update(updateData)
+        .then(() => {
+          showLoading(false);
+          showToast('Order updated successfully', 'success');
+          document.getElementById('orderForm').reset();
+          document.getElementById('orderEmail').value = currentUser.email;
+          document.getElementById('orderForm').onsubmit = function(e) { submitOrder(e); };
+          logAudit('update', 'Order', id, 'Updated order');
+          navigateTo('orders');
+        })
+        .catch((error) => {
+          showLoading(false);
+          showToast('Error: ' + error.message, 'error');
+        });
+    }
+
+    function openStatusModal(id) {
+      currentStatusOrderId = id;
+      const order = allOrders.find(o => o.id === id);
+      if (order) {
+        document.getElementById('newStatus').value = order.status;
+        document.getElementById('rejectReasonGroup').style.display = order.status === 'rejected' ? 'block' : 'none';
+        document.getElementById('rejectReason').value = order.rejectReason || '';
+      }
+      openModal('statusModal');
+    }
+
+    function confirmStatusUpdate() {
+      const newStatus = document.getElementById('newStatus').value;
+      const rejectReason = document.getElementById('rejectReason').value.trim();
+      if (newStatus === 'rejected' && !rejectReason) {
+        showToast('Please provide a rejection reason', 'error');
+        return;
+      }
+      const updateData = {
+        status: newStatus,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+      if (newStatus === 'rejected') { updateData.rejectReason = rejectReason; }
+
+      const orderRef = db.collection('orders').doc(currentStatusOrderId);
+      orderRef.get().then((doc) => {
+        if (!doc.exists) { showToast('Order not found', 'error'); return; }
+        const order = doc.data();
+        const history = order.statusHistory || [];
+        history.push({
+          status: newStatus,
+          timestamp: new Date().toISOString(),
+          note: newStatus === 'rejected' ? 'Rejected: ' + rejectReason : 'Status updated to ' + STATUS_LABELS[
+            newStatus]
+        });
+        updateData.statusHistory = history;
+        return orderRef.update(updateData);
+      }).then(() => {
+        closeModal('statusModal');
+        showToast('Status updated to ' + STATUS_LABELS[newStatus], 'success');
+        logAudit('update', 'Order', currentStatusOrderId, 'Changed status to ' + newStatus);
+      }).catch((error) => { showToast('Error: ' + error.message, 'error'); });
+    }
+
+    function deleteOrder(id) {
+      if (!confirm('Delete this order?')) return;
+      db.collection('orders').doc(id).delete()
+        .then(() => {
+          showToast('Order deleted', 'success');
+          logAudit('delete', 'Order', id, 'Deleted order');
+        })
+        .catch((error) => { showToast('Error: ' + error.message, 'error'); });
+    }
+
+    // ============================================================
+    //  👥 USERS
+    // ============================================================
+    function renderUsers() {
+      if (!isAdmin) return;
+      let users = [...allUsers];
+      const search = document.getElementById('userSearch').value.toLowerCase();
+      if (search) {
+        users = users.filter(u =>
+          (u.displayName && u.displayName.toLowerCase().includes(search)) ||
+          (u.email && u.email.toLowerCase().includes(search))
+        );
+      }
+      const totalPages = Math.ceil(users.length / ITEMS_PER_PAGE) || 1;
+      const start = (usersPage - 1) * ITEMS_PER_PAGE;
+      const paginated = users.slice(start, start + ITEMS_PER_PAGE);
+
+      const container = document.getElementById('usersTable');
+      if (paginated.length === 0) {
+        container.innerHTML =
+          '<div class="empty-state"><div class="empty-state-icon"><span class="material-symbols-rounded">group</span></div><div class="empty-state-title">No users found</div></div>';
+      } else {
+        let html =
+          '<table class="data-table"><thead><tr><th>User</th><th>Email</th><th>Role</th><th>Joined</th><th>Orders</th></tr></thead><tbody>';
+        paginated.forEach(u => {
+          const userOrders = allOrders.filter(o => o.userId === u.uid).length;
+          html += '<tr><td><div style="display:flex; align-items:center; gap:12px;">' +
+            '<img src="' + (u.photoURL ||
+              'https://ui-avatars.com/api/?name=' + encodeURIComponent(u.displayName || 'U') +
+              '&background=6366f1&color=fff') +
+            '" style="width:36px; height:36px; border-radius:50%; object-fit:cover;">' +
+            '<span style="font-weight:600;">' + escapeHtml(u.displayName || 'Unknown') +
+            '</span></div></td>' +
+            '<td>' + escapeHtml(u.email) + '</td>' +
+            '<td><span class="badge badge-' + (u.role === 'admin' ? 'approved' : 'pending') + '">' + (u
+              .role === 'admin' ? 'Admin' : 'Customer') + '</span></td>' +
+            '<td>' + formatDate(u.createdAt) + '</td>' +
+            '<td>' + userOrders + '</td></tr>';
+        });
+        html += '</tbody></table>';
+        container.innerHTML = html;
+      }
+      renderPagination('usersPagination', usersPage, totalPages, (p) => { usersPage = p;
+        renderUsers(); });
+    }
+
+    function filterUsers() { usersPage = 1;
+      renderUsers(); }
+
+    // ============================================================
+    //  📜 AUDIT LOGS
+    // ============================================================
+    function logAudit(action, entityType, entityId, details) {
+      if (!isAdmin) return;
+      db.collection('auditLogs').add({
+        action,
+        entityType,
+        entityId,
+        details,
+        adminId: currentUser.uid,
+        adminEmail: currentUser.email,
+        adminName: currentUser.displayName || '',
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      }).catch(err => console.error('Audit log error:', err));
+    }
+
+    function renderAuditLogs() {
+      if (!isAdmin) return;
+      const container = document.getElementById('auditLogs');
+      if (allAuditLogs.length === 0) {
+        container.innerHTML =
+          '<div class="empty-state"><div class="empty-state-icon"><span class="material-symbols-rounded">history</span></div><div class="empty-state-title">No audit logs yet</div></div>';
+        return;
+      }
+      let html = '';
+      allAuditLogs.forEach(log => {
+        const iconMap = { create: 'add', update: 'edit', delete: 'delete', approve: 'check_circle' };
+        html += '<div class="audit-item">' +
+          '<div class="audit-icon ' + log.action + '"><span class="material-symbols-rounded">' +
+          (iconMap[log.action] || 'info') + '</span></div>' +
+          '<div class="audit-content"><div class="audit-title">' + escapeHtml(log.details) + '</div>' +
+          '<div class="audit-meta">by ' + escapeHtml(log.adminName || log.adminEmail) +
+          ' &bull; ' + formatDate(log.timestamp) + ' &bull; ' + escapeHtml(log.entityType) +
+          '</div></div></div>';
+      });
+      container.innerHTML = html;
+    }
+
+    // ============================================================
+    //  🧾 INVOICES
+    // ============================================================
+    function generateInvoice(id) {
+      const order = allOrders.find(o => o.id === id);
+      if (!order) return;
+
+      const invoiceHtml =
+        '<div class="invoice-preview" id="invoicePdfContent">' +
+        '<div class="invoice-header">' +
+        '<div><div class="invoice-brand">All online service</div><div style="color:var(--text-secondary); font-size:0.9rem; margin-top:4px;">Professional Services</div></div>' +
+        '<div class="invoice-meta">' +
+        '<div class="invoice-meta-item"><span class="invoice-meta-label">Invoice #: </span><span class="invoice-meta-value">INV-' +
+        order.id.slice(-6).toUpperCase() + '</span></div>' +
+        '<div class="invoice-meta-item"><span class="invoice-meta-label">Date: </span><span class="invoice-meta-value">' +
+        new Date().toLocaleDateString() + '</span></div>' +
+        '<div class="invoice-meta-item"><span class="invoice-meta-label">Order Date: </span><span class="invoice-meta-value">' +
+        formatDate(order.createdAt) + '</span></div></div></div>' +
+        '<div style="display:grid; grid-template-columns:1fr 1fr; gap:48px; margin-bottom:48px;">' +
+        '<div class="invoice-section"><div class="invoice-section-title">Bill From</div>' +
+        '<div style="font-weight:600;">All online service</div>' +
+        '<div style="color:var(--text-secondary); font-size:0.9rem;">123 Business Street<br>Tech City, TC 12345<br>contact@websetu.com</div></div>' +
+        '<div class="invoice-section"><div class="invoice-section-title">Bill To</div>' +
+        '<div style="font-weight:600;">' + escapeHtml(order.fullName) + '</div>' +
+        '<div style="color:var(--text-secondary); font-size:0.9rem;">' + escapeHtml(order.email) +
+        '<br>' + escapeHtml(order.phone) + '<br>' +
+        (order.company ? escapeHtml(order.company) + '<br>' : '') +
+        formatAddress(order.address) + '</div></div></div>' +
+        '<div class="invoice-section"><div class="invoice-section-title">Order Details</div>' +
+        '<table class="invoice-table"><thead><tr><th>Service</th><th>Description</th><th>Amount</th></tr></thead><tbody>' +
+        '<tr><td>' + escapeHtml(order.service) + '</td><td>' + escapeHtml(order.description) +
+        '</td><td style="text-align:right;">₹' + (order.budget || 0).toLocaleString() +
+        '</td></tr></tbody></table>' +
+        '<div class="invoice-total">Total: ₹' + (order.budget || 0).toLocaleString() + '</div></div>' +
+        '<div class="invoice-section" style="margin-top:48px; padding:24px; background:var(--bg); border-radius:var(--radius-sm);">' +
+        '<div class="invoice-section-title">Payment Information</div>' +
+        '<div style="display:flex; align-items:center; gap:12px;">' +
+        '<span class="material-symbols-rounded" style="color:var(--success); font-size:32px;">payments</span>' +
+        '<div><div style="font-weight:700;">Cash on Delivery</div>' +
+        '<div style="color:var(--text-secondary); font-size:0.9rem;">Payment will be collected upon delivery/completion of the service.</div></div></div></div>' +
+        '<div style="margin-top:48px; text-align:center; color:var(--text-secondary); font-size:0.85rem;">' +
+        '<p>Thank you for your business!</p>' +
+        '<p>If you have any questions, please contact us at support@websetu.com</p></div></div>';
+
+      document.getElementById('invoiceContent').innerHTML = invoiceHtml;
+      openModal('invoiceModal');
+    }
+
+    function downloadInvoicePDF() {
+      const element = document.getElementById('invoicePdfContent');
+      if (!element) return;
+      showLoading(true);
+      html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#ffffff' })
+        .then((canvas) => {
+          const imgData = canvas.toDataURL('image/png');
+          const { jsPDF } = window.jspdf;
+          const pdf = new jsPDF('p', 'mm', 'a4');
+          const imgWidth = 210;
+          const imgHeight = (canvas.height * imgWidth) / canvas.width;
+          pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+          pdf.save('Invoice-' + Date.now() + '.pdf');
+          showLoading(false);
+          showToast('Invoice downloaded', 'success');
+        })
+        .catch((error) => {
+          showLoading(false);
+          showToast('PDF generation failed', 'error');
+        });
+    }
+
+    // ============================================================
+    //  📤 EXPORT
+    // ============================================================
+    function exportToExcel() {
+      const data = allOrders.map(o => ({
+        'Order ID': o.id,
+        'Customer': o.fullName || o.userName || '',
+        'Email': o.userEmail || '',
+        'Service': o.service,
+        'Description': o.description,
+        'Budget (INR)': o.budget || 0,
+        'Status': STATUS_LABELS[o.status] || o.status,
+        'Payment': o.paymentMethod,
+        'Deadline': o.deadline || '',
+        'Address': formatAddress(o.address),
+        'Created': formatDate(o.createdAt),
+        'Updated': formatDate(o.updatedAt)
+      }));
+      const ws = XLSX.utils.json_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Orders');
+      XLSX.writeFile(wb, 'Orders_Export_' + new Date().toISOString().slice(0, 10) + '.xlsx');
+      showToast('Excel file downloaded', 'success');
+    }
+
+    function exportToCSV() {
+      const data = allOrders.map(o => ({
+        'Order ID': o.id,
+        'Customer': o.fullName || o.userName || '',
+        'Email': o.userEmail || '',
+        'Service': o.service,
+        'Budget (INR)': o.budget || 0,
+        'Status': STATUS_LABELS[o.status] || o.status,
+        'Created': formatDate(o.createdAt)
+      }));
+      const ws = XLSX.utils.json_to_sheet(data);
+      const csv = XLSX.utils.sheet_to_csv(ws);
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'Orders_Export_' + new Date().toISOString().slice(0, 10) + '.csv';
+      link.click();
+      showToast('CSV file downloaded', 'success');
+    }
+
+    // ============================================================
+    //  🧰 UTILITIES
+    // ============================================================
+    function getStatusBadge(status) {
+      const label = STATUS_LABELS[status] || status;
+      return '<span class="badge badge-' + status + '"><span class="badge-dot"></span>' + label + '</span>';
+    }
+
+    function formatDate(timestamp) {
+      if (!timestamp) return '-';
+      let date;
+      if (timestamp.toDate) { date = timestamp.toDate(); } else if (typeof timestamp === 'string') { date =
+          new Date(timestamp); } else { return '-'; }
+      return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    }
+
+    function formatAddress(addr) {
+      if (!addr) return '-';
+      let parts = [];
+      if (addr.line1) parts.push(addr.line1);
+      if (addr.line2) parts.push(addr.line2);
+      if (addr.city) parts.push(addr.city);
+      if (addr.state) parts.push(addr.state);
+      if (addr.zip) parts.push(addr.zip);
+      if (addr.country) parts.push(addr.country);
+      return parts.join(', ') || '-';
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function showToast(message, type) {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = 'toast ' + type;
+      const icons = { success: 'check_circle', error: 'error', warning: 'warning', info: 'info' };
+      toast.innerHTML = '<span class="material-symbols-rounded">' + icons[type] + '</span><span>' + escapeHtml(
+        message) + '</span>';
+      container.appendChild(toast);
+      setTimeout(() => { toast.classList.add('removing');
+        setTimeout(() => toast.remove(), 300); }, 4000);
+    }
+
+    function showLoading(show) {
+      document.getElementById('loadingOverlay').classList.toggle('active', show);
+    }
+
+    function openModal(id) {
+      document.getElementById(id).classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    function renderPagination(containerId, currentPage, totalPages, callback) {
+      const container = document.getElementById(containerId);
+      if (totalPages <= 1) { container.innerHTML = ''; return; }
+      let html = '<button class="page-btn" onclick="goToPage(' + (currentPage - 1) +
+        ')" ' + (currentPage === 1 ? 'disabled' : '') +
+        '><span class="material-symbols-rounded">chevron_left</span></button>';
+      for (let i = 1; i <= totalPages; i++) {
+        if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
+          html += '<button class="page-btn ' + (i === currentPage ? 'active' : '') +
+            '" onclick="goToPage(' + i + ')">' + i + '</button>';
+        } else if (i === currentPage - 2 || i === currentPage + 2) {
+          html += '<span style="padding:0 8px; color:var(--text-secondary);">...</span>';
+        }
+      }
+      html += '<button class="page-btn" onclick="goToPage(' + (currentPage + 1) +
+        ')" ' + (currentPage === totalPages ? 'disabled' : '') +
+        '><span class="material-symbols-rounded">chevron_right</span></button>';
+      container.innerHTML = html;
+      window._paginationCallback = callback;
+    }
+
+    function goToPage(page) {
+      if (window._paginationCallback) window._paginationCallback(page);
+    }
+
+    // ============================================================
+    //  🧭 NAVIGATION
+    // ============================================================
+    function navigateTo(section) {
+      const adminSections = ['all-orders', 'users', 'services', 'audit'];
+      if (adminSections.includes(section) && !isAdmin) {
+        showToast('Access denied', 'error');
+        return;
+      }
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+      const target = document.getElementById('section-' + section);
+      if (target) target.classList.add('active');
+      const nav = document.getElementById('nav-' + section);
+      if (nav) nav.classList.add('active');
+
+      document.getElementById('sidebar').classList.remove('open');
+      document.getElementById('sidebarOverlay').classList.remove('active');
+
+      if (section === 'dashboard') refreshDashboard();
+      if (section === 'about') { /* static */ }
+      if (section === 'orders') renderUserOrders();
+      if (section === 'all-orders') renderAdminOrders();
+      if (section === 'users') renderUsers();
+      if (section === 'services') renderServices();
+      if (section === 'audit') renderAuditLogs();
+    }
+
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
+      document.getElementById('sidebarOverlay').classList.toggle('active');
+    }
+
+    function openAboutModal() {
+      openModal('aboutModal');
+    }
+
+    // ============================================================
+    //  🎨 THEME
+    // ============================================================
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
+      updateThemeIcon(next);
+      if (isAdmin) {
+        setTimeout(refreshAdminDashboard, 100);
+      }
+    }
+
+    function updateThemeIcon(theme) {
+      const icon = theme === 'dark' ? 'light_mode' : 'dark_mode';
+      for (let i = 1; i <= 8; i++) {
+        const el = document.getElementById('themeIcon' + (i === 1 ? '' : i));
+        if (el) el.textContent = icon;
+      }
+      const aboutIcon = document.getElementById('themeIconAbout');
+      if (aboutIcon) aboutIcon.textContent = icon;
+    }
+
+    // ============================================================
+    //  🚀 BOOTSTRAP
+    // ============================================================
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    updateThemeIcon(savedTheme);
+
+    document.getElementById('orderDeadline').setAttribute('min', new Date().toISOString().split('T')[0]);
+
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+      overlay.addEventListener('click', function(e) {
+        if (e.target === this) this.classList.remove('active');
+      });
+    });
+
+    document.getElementById('sidebarOverlay').addEventListener('click', function() {
+      document.getElementById('sidebar').classList.remove('open');
+      this.classList.remove('active');
+    });
+
+    console.log('🚀 All online service cloud started with Firebase');
+    console.log('📧 Admin email:', SUPER_ADMIN_EMAIL);
+    console.log('☁️  All data stored in Firestore cloud');
+  </script>
+  <script>
+  // TEMPORARY: Allow localhost testing
+  // Remove this before production!
+  if (location.protocol === 'file:') {
+    alert('Please run via a local server (http://localhost) instead of opening the file directly.\n\nUse: python -m http.server 5500');
+  }
+</script>
+</body>
+</html>
